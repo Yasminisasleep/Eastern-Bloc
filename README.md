@@ -1,6 +1,6 @@
 # Kulto
 
-Kulto is a cultural matching platform. Users set their cultural preferences (film genres, music taste, interest in theatre or exhibitions) and get matched with people who share their taste around real-world events happening near them. Think of it as a "Tinder for cultural outings", minus the romance angle.
+Kulto is a cultural matching platform. Users set their cultural preferences (film genres, music taste, interest in theatre or exhibitions) and get matched with people who share their taste around real-world events happening near them. We thought of it as a "Tinder for cultural outings", minus the romance angle.
 
 The project features a modular monolith backend with event-driven processing via Kafka, a React frontend, and a containerized deployment pipeline.
 

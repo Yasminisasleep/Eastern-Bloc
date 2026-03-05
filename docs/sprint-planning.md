@@ -1,140 +1,140 @@
-# Kulto : Sprint Planning
+# Kulto: Sprint Planning
 
 ## Timeline
 
-| Sprint | Dates | Objectif | Jalon |
-|--------|-------|----------|-------|
-| S0 | 19 fev au 26 fev | Setup DevOps + conception | M1 |
-| S1 | 26 fev au 12 mars | CRUD evenements + Kafka | |
-| S2 | 12 mars au 27 mars | Profils, matching, notifications | M2 (MVP) |
-| S3 | 27 mars au 15 avril | Tests, stabilisation, CI/CD | |
-| S4 | 15 avril au 24 avril | Release 1.0 + demo | Soutenance |
+| Sprint | Dates | Goal | Milestone |
+|--------|-------|------|-----------|
+| S0 | Feb 19 to Feb 26 | DevOps setup + conception | M1 |
+| S1 | Feb 26 to Mar 12 | Event CRUD + Kafka | |
+| S2 | Mar 12 to Mar 27 | Profiles, matching, notifications | M2 (MVP) |
+| S3 | Mar 27 to Apr 15 | Testing, stabilization, CI/CD | |
+| S4 | Apr 15 to Apr 24 | Release 1.0 + demo | Presentation |
 
 ---
 
-## Sprint 0 : Setup DevOps et Conception (19 fev au 26 fev)
+## Sprint 0: DevOps Setup and Conception (Feb 19 to Feb 26)
 
-| Tache |
-|-------|
-| Creation du repo GitHub + structure du projet |
-| Init du projet Spring Boot (Maven, Java 21) |
-| Init du projet React (Vite + React 18) |
-| Ecriture du docker-compose (backend, frontend, PostgreSQL, Kafka, Zookeeper) |
-| Mise en place GitHub Actions (CI : build + tests) |
-| Configuration GitHub Projects (Kanban) + creation des premieres issues |
-| POC Kafka : un producer et un consumer basiques |
-| Redaction du document de conception + user stories |
-| Creation des diagrammes d'architecture |
+| Task |
+|------|
+| Create GitHub repo + project structure |
+| Initialize Spring Boot project (Maven, Java 21) |
+| Initialize React project (Vite + React 18) |
+| Write docker-compose (backend, frontend, PostgreSQL, Kafka, Zookeeper) |
+| Set up GitHub Actions (CI: build + test) |
+| Configure GitHub Projects (Kanban) + initial issues |
+| Kafka POC: basic producer/consumer |
+| Write conception document + user stories |
+| Create architecture diagrams |
 
-Livrable : repo structure, CI fonctionnelle, docker-compose qui lance toute la stack, document de conception.
+Deliverable: structured repo, working CI, docker-compose running the full stack, conception document.
 
 ---
 
-## Sprint 1 : CRUD Evenements et Ingestion Kafka (26 fev au 12 mars)
+## Sprint 1: Event CRUD and Kafka Ingestion (Feb 26 to Mar 12)
 
 20 story points.
 
 ### User Stories
 
-| US | Titre | Points |
+| US | Title | Points |
 |----|-------|--------|
-| 03 | Creation d'un evenement (admin) | 3 |
-| 04 | Liste des evenements avec filtrage | 5 |
-| 05 | Detail d'un evenement | 2 |
-| 06 | Modification / suppression d'un evenement | 2 |
-| 08 | Ingestion d'evenements via Kafka | 8 |
+| 03 | Create Event (admin) | 3 |
+| 04 | List Events with Filtering | 5 |
+| 05 | Event Detail View | 2 |
+| 06 | Update / Delete Event | 2 |
+| 08 | Kafka Event Ingestion | 8 |
 
-### Taches techniques
+### Technical Tasks
 
-| Tache |
-|-------|
-| Modele de donnees (entites JPA : Event, Category, Tag) |
-| Jeu de donnees initial (seed) |
-| Configuration Spring Data JPA + PostgreSQL |
-| Configuration Spring Kafka (producer + consumer) |
-| Pages frontend : liste des evenements + detail |
-| Configuration JaCoCo dans le build Maven |
-| Tests unitaires sur les endpoints CRUD |
-| Setup springdoc-openapi (Swagger UI) |
+| Task |
+|------|
+| Data model (JPA entities: Event, Category, Tag) |
+| Seed data |
+| Spring Data JPA + PostgreSQL config |
+| Spring Kafka config (producer + consumer) |
+| Frontend pages: event list + detail |
+| JaCoCo config in Maven build |
+| Unit tests for CRUD endpoints |
+| springdoc-openapi setup (Swagger UI) |
 
-Livrable : API CRUD evenements fonctionnelle, consumer Kafka sur events.ingestion, pages frontend liste et detail.
+Deliverable: working event CRUD API, Kafka consumer on events.ingestion, frontend list and detail pages.
 
 ---
 
-## Sprint 2 : Profils, Matching et Notifications (12 mars au 27 mars)
+## Sprint 2: Profiles, Matching and Notifications (Mar 12 to Mar 27)
 
 29 story points.
 
 ### User Stories
 
-| US | Titre | Points |
+| US | Title | Points |
 |----|-------|--------|
-| 01 | Inscription utilisateur | 3 |
-| 02 | Connexion / authentification JWT | 3 |
-| 07 | Preferences culturelles | 5 |
-| 09 | Matching entre utilisateurs | 8 |
-| 10 | Notifications de match (quota journalier) | 5 |
-| 11 | Accepter / refuser un match | 5 |
+| 01 | User Registration | 3 |
+| 02 | Login / JWT Auth | 3 |
+| 07 | Cultural Preferences | 5 |
+| 09 | User Matching | 8 |
+| 10 | Match Notifications (daily quota) | 5 |
+| 11 | Accept / Reject Match | 5 |
 
-### Taches techniques
+### Technical Tasks
 
-| Tache |
-|-------|
-| Entites : User, Preference, Match, Notification |
+| Task |
+|------|
+| Entities: User, Preference, Match, Notification |
 | Spring Security + JWT |
-| Moteur de matching (algorithme par tags partages) |
-| Topic user.preferences.updated (producer + consumer) |
-| Topic match.notifications (producer + consumer) |
-| Frontend : inscription, connexion, preferences |
-| Frontend : notifications, detail du match, accepter/refuser |
-| Tests d'integration Kafka (Testcontainers) |
-| Revue de code croisee |
+| Matching engine (shared-tag algorithm) |
+| user.preferences.updated topic (producer + consumer) |
+| match.notifications topic (producer + consumer) |
+| Frontend: registration, login, preferences |
+| Frontend: notifications, match detail, accept/reject |
+| Kafka integration tests (Testcontainers) |
+| Cross-team code review |
 
-Livrable : MVP fonctionnel, les 3 topics Kafka operationnels.
-
----
-
-## Sprint 3 : Tests et Stabilisation (27 mars au 15 avril)
-
-| Tache |
-|-------|
-| Atteindre 70% de couverture (JaCoCo) |
-| Tests unitaires sur tous les services metier |
-| Tests d'integration API (MockMvc) |
-| Tests d'integration Kafka (Testcontainers) |
-| Pipeline CI/CD complete (build Docker + push GHCR) |
-| Environnement staging (docker-compose.prod.yml) |
-| Validation des entrees, gestion d'erreurs, CORS |
-| Documentation API (Swagger/OpenAPI) |
-| Audit de securite |
-
-Livrable : couverture 70%, pipeline CI/CD complete, Swagger UI, environnement staging.
+Deliverable: functional MVP, all 3 Kafka topics operational.
 
 ---
 
-## Sprint 4 : Release (15 avril au 24 avril)
+## Sprint 3: Testing and Stabilization (Mar 27 to Apr 15)
 
-| Tache |
-|-------|
-| Code freeze le 20 avril |
-| Tag de la release v1.0.0 |
-| Verification du docker-compose up de bout en bout |
-| Scenario de demo (parcours utilisateur complet) |
-| Jeu de donnees de demo |
-| Preparation des slides |
-| Repetition |
-| Derniers correctifs |
-| Finalisation de la documentation |
+| Task |
+|------|
+| Reach 70% coverage (JaCoCo) |
+| Unit tests for all business services |
+| API integration tests (MockMvc) |
+| Kafka integration tests (Testcontainers) |
+| Full CI/CD pipeline (Docker build + push to GHCR) |
+| Staging environment (docker-compose.prod.yml) |
+| Input validation, error handling, CORS |
+| API documentation (Swagger/OpenAPI) |
+| Security audit |
 
-Livrable : release v1.0.0 tagguee, images Docker sur GHCR, demo fonctionnelle, slides.
+Deliverable: 70% coverage, complete CI/CD pipeline, Swagger UI, staging environment.
 
 ---
 
-## Organisation
+## Sprint 4: Release (Apr 15 to Apr 24)
 
-| Ceremonie | Frequence | Duree | Format |
-|-----------|-----------|-------|--------|
-| Daily standup | Quotidien | 10 min | Async sur Discord |
-| Sprint planning | Debut de sprint | 30 min | En presentiel |
-| Sprint review | Fin de sprint | 30 min | En presentiel + demo |
-| Retrospective | Fin de sprint | 15 min | En presentiel |
+| Task |
+|------|
+| Code freeze Apr 20 |
+| Tag release v1.0.0 |
+| End-to-end docker-compose up verification |
+| Demo scenario (full user journey) |
+| Demo dataset |
+| Presentation slides |
+| Dry run |
+| Final hotfixes |
+| Finalize documentation |
+
+Deliverable: v1.0.0 tagged, Docker images on GHCR, working demo, slides.
+
+---
+
+## Organization
+
+| Ceremony | Frequency | Duration | Format |
+|----------|-----------|----------|--------|
+| Daily standup | Daily | 10 min | Async on Discord |
+| Sprint planning | Start of sprint | 30 min | In person |
+| Sprint review | End of sprint | 30 min | In person + demo |
+| Retrospective | End of sprint | 15 min | In person |
