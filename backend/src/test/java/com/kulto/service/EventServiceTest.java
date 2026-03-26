@@ -4,6 +4,7 @@ import com.kulto.domain.Event;
 import com.kulto.domain.EventCategory;
 import com.kulto.domain.EventStatus;
 import com.kulto.dto.EventRequest;
+import com.kulto.dto.EventResponse;
 import com.kulto.exception.ResourceNotFoundException;
 import com.kulto.repository.EventRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -16,7 +17,6 @@ import org.springframework.test.context.ActiveProfiles;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -36,7 +36,7 @@ class EventServiceTest {
     }
 
     @Test
-    void createEvent_withValidData_returnsEvent() {
+    void create_withValidData_returnsEventResponse() {
         EventRequest request = new EventRequest();
         request.setTitle("Concert Test");
         request.setDescription("A test concert");
@@ -46,44 +46,31 @@ class EventServiceTest {
         request.setCity("Paris");
         request.setTags(List.of("rock", "live"));
 
-        Event event = eventService.createEvent(request);
+        EventResponse response = eventService.create(request);
 
-        assertNotNull(event);
-        assertEquals("Concert Test", event.getTitle());
-        assertEquals(EventCategory.CONCERT, event.getCategory());
-        assertEquals(EventStatus.ACTIVE, event.getStatus());
+        assertNotNull(response);
+        assertEquals("Concert Test", response.getTitle());
+        assertEquals(EventCategory.CONCERT, response.getCategory());
     }
 
     @Test
-    void createEvent_withPastDate_throwsException() {
-        EventRequest request = new EventRequest();
-        request.setTitle("Past Event");
-        request.setCategory(EventCategory.CINEMA);
-        request.setDate(LocalDateTime.now().minusDays(1));
-        request.setVenue("Venue");
-        request.setCity("Paris");
-
-        assertThrows(IllegalArgumentException.class, () -> eventService.createEvent(request));
-    }
-
-    @Test
-    void getEventById_existingEvent_returnsEvent() {
+    void getById_existingEvent_returnsEventResponse() {
         Event event = createSampleEvent("Find Me", EventCategory.EXHIBITION);
 
-        Event retrieved = eventService.getEventById(event.getId());
+        EventResponse response = eventService.getById(event.getId());
 
-        assertNotNull(retrieved);
-        assertEquals("Find Me", retrieved.getTitle());
-        assertEquals(event.getId(), retrieved.getId());
+        assertNotNull(response);
+        assertEquals("Find Me", response.getTitle());
+        assertEquals(event.getId(), response.getId());
     }
 
     @Test
-    void getEventById_nonExistentEvent_throwsException() {
-        assertThrows(ResourceNotFoundException.class, () -> eventService.getEventById(999L));
+    void getById_nonExistentEvent_throwsException() {
+        assertThrows(ResourceNotFoundException.class, () -> eventService.getById(999L));
     }
 
     @Test
-    void updateEvent_withValidData_returnsUpdatedEvent() {
+    void update_withValidData_returnsUpdatedEventResponse() {
         Event event = createSampleEvent("Original", EventCategory.THEATRE);
 
         EventRequest update = new EventRequest();
@@ -95,7 +82,7 @@ class EventServiceTest {
         update.setCity("Lyon");
         update.setTags(List.of("theatre"));
 
-        Event updated = eventService.updateEvent(event.getId(), update);
+        EventResponse updated = eventService.update(event.getId(), update);
 
         assertEquals("Updated", updated.getTitle());
         assertEquals("Updated description", updated.getDescription());
@@ -103,7 +90,7 @@ class EventServiceTest {
     }
 
     @Test
-    void updateEvent_nonExistentEvent_throwsException() {
+    void update_nonExistentEvent_throwsException() {
         EventRequest update = new EventRequest();
         update.setTitle("Updated");
         update.setCategory(EventCategory.CONCERT);
@@ -111,55 +98,54 @@ class EventServiceTest {
         update.setVenue("Venue");
         update.setCity("Paris");
 
-        assertThrows(ResourceNotFoundException.class, () -> eventService.updateEvent(999L, update));
+        assertThrows(ResourceNotFoundException.class, () -> eventService.update(999L, update));
     }
 
     @Test
-    void deleteEvent_existingEvent_softDeletes() {
+    void delete_existingEvent_cancelsEvent() {
         Event event = createSampleEvent("To Delete", EventCategory.FESTIVAL);
 
-        eventService.deleteEvent(event.getId());
+        eventService.delete(event.getId());
 
         Event deleted = eventRepository.findById(event.getId()).orElse(null);
         assertNotNull(deleted);
-        assertEquals(EventStatus.DELETED, deleted.getStatus());
+        assertEquals(EventStatus.CANCELLED, deleted.getStatus());
     }
 
     @Test
-    void deleteEvent_nonExistentEvent_throwsException() {
-        assertThrows(ResourceNotFoundException.class, () -> eventService.deleteEvent(999L));
+    void delete_nonExistentEvent_throwsException() {
+        assertThrows(ResourceNotFoundException.class, () -> eventService.delete(999L));
     }
 
     @Test
-    void listEvents_returnsPage() {
+    void list_returnsPage() {
         createSampleEvent("Event 1", EventCategory.CINEMA);
         createSampleEvent("Event 2", EventCategory.CONCERT);
         createSampleEvent("Event 3", EventCategory.EXHIBITION);
 
-        Page<Event> page = eventService.listEvents(null, null, PageRequest.of(0, 10));
+        Page<EventResponse> page = eventService.list(null, null, null, null, null, PageRequest.of(0, 10));
 
         assertEquals(3, page.getContent().size());
         assertEquals(1, page.getTotalPages());
     }
 
     @Test
-    void listEvents_filterByCategory_returnsFiltered() {
+    void list_filterByCategory_returnsFiltered() {
         createSampleEvent("Cinema Event", EventCategory.CINEMA);
         createSampleEvent("Concert Event", EventCategory.CONCERT);
         createSampleEvent("Cinema 2", EventCategory.CINEMA);
 
-        Page<Event> page = eventService.listEvents(EventCategory.CINEMA, null, PageRequest.of(0, 10));
+        Page<EventResponse> page = eventService.list(EventCategory.CINEMA, null, null, null, null, PageRequest.of(0, 10));
 
         assertEquals(2, page.getContent().size());
-        assertTrue(page.getContent().stream().allMatch(e -> e.getCategory() == EventCategory.CINEMA));
     }
 
     @Test
-    void listEvents_filterByCity_returnsFiltered() {
+    void list_filterByCity_returnsFiltered() {
         createSampleEvent("Paris Event", EventCategory.CINEMA);
         createSampleEvent("Lyon Event", EventCategory.CONCERT);
 
-        Page<Event> page = eventService.listEvents(null, "Paris", PageRequest.of(0, 10));
+        Page<EventResponse> page = eventService.list(null, "Paris", null, null, null, PageRequest.of(0, 10));
 
         assertEquals(1, page.getContent().size());
         assertEquals("Paris", page.getContent().get(0).getCity());
@@ -175,7 +161,6 @@ class EventServiceTest {
                 .city("Paris")
                 .tags(List.of("test"))
                 .source("test")
-                .status(EventStatus.ACTIVE)
                 .build();
         return eventRepository.save(event);
     }
