@@ -1,17 +1,24 @@
 services:
   postgres:
     image: postgres:16
+    container_name: kulto-postgres
     ports:
       - "5432:5432"
     environment:
-      POSTGRES_DB: kulto
-      POSTGRES_USER: kulto
-      POSTGRES_PASSWORD: kulto
+      POSTGRES_DB: ${DB_NAME:-kulto}
+      POSTGRES_USER: ${DB_USER:-kulto}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-kulto}
     volumes:
       - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-kulto}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   zookeeper:
     image: confluentinc/cp-zookeeper:7.6.0
+    container_name: kulto-zookeeper
     ports:
       - "2181:2181"
     environment:
@@ -20,10 +27,12 @@ services:
 
   kafka:
     image: confluentinc/cp-kafka:7.6.0
+    container_name: kulto-kafka
     ports:
       - "9092:9092"
     depends_on:
-      - zookeeper
+      zookeeper:
+        condition: service_started
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
@@ -34,26 +43,36 @@ services:
       KAFKA_CREATE_TOPICS: "events.ingestion:1:1,user.preferences.updated:1:1,match.notifications:1:1"
 
   backend:
+    container_name: kulto-backend
     build: ./backend
     ports:
       - "8080:8080"
     depends_on:
-      - postgres
-      - kafka
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_started
     environment:
-      DB_HOST: postgres
-      DB_PORT: 5432
-      DB_NAME: kulto
-      DB_USER: kulto
-      DB_PASSWORD: kulto
-      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      DB_HOST: ${DB_HOST:-postgres}
+      DB_PORT: ${DB_PORT:-5432}
+      DB_NAME: ${DB_NAME:-kulto}
+      DB_USER: ${DB_USER:-kulto}
+      DB_PASSWORD: ${DB_PASSWORD:-kulto}
+      KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_SERVERS:-kafka:29092}
+      JWT_SECRET: ${JWT_SECRET:-ThisIsAVeryLongSecretKeyForJWTSigningPurposesOnlyDoNotUseInProduction}
+      JWT_EXPIRATION: ${JWT_EXPIRATION:-86400000}
+      SERVER_PORT: ${SERVER_PORT:-8080}
 
   frontend:
+    container_name: kulto-frontend
     build: ./frontend
     ports:
       - "3000:80"
     depends_on:
       - backend
+    environment:
+      - VITE_API_URL=/api
 
 volumes:
   pgdata:
+

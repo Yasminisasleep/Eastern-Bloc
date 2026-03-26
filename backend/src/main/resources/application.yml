@@ -33,5 +33,9 @@ springdoc:
   swagger-ui:
     path: /swagger-ui.html
 
+jwt:
+  secret: ${JWT_SECRET:ThisIsAVeryLongSecretKeyForJWTSigningPurposesOnlyDoNotUseInProduction}
+  expiration: ${JWT_EXPIRATION:86400000}
+
 server:
   port: 8080
