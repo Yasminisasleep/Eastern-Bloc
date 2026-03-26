@@ -32,6 +32,56 @@ export interface AuthResponse {
   lastName: string
 }
 
+export interface SignupPayload {
+  email: string
+  firstName: string
+  lastName: string
+  password: string
+  dateOfBirth?: string
+  city?: string
+}
+
+export interface PreferencesPayload {
+  preferredCategories: string[]
+  interestTags: string[]
+  geographicRadiusKm: number
+}
+
+export interface UserPreferences extends PreferencesPayload {
+  updatedAt?: string
+}
+
+export interface MatchEvent {
+  id: number
+  title: string
+  category: string
+  date: string
+  city: string
+  venue: string
+}
+
+export interface MatchSummary {
+  id: number
+  status: 'PENDING' | 'ACCEPTED' | 'REJECTED' | 'CONFIRMED' | 'CANCELLED'
+  compatibilityScore: number
+  matchedUserName: string
+  event: MatchEvent
+}
+
+export interface NotificationItem {
+  id: number
+  status: 'UNREAD' | 'READ'
+  createdAt: string
+  message: string
+  match: MatchSummary
+}
+
+export interface MatchDetail extends MatchSummary {
+  matchedUserBio?: string
+  matchedUserCity?: string
+  matchedUserTags?: string[]
+}
+
 let authToken: string | null = null
 
 export function setAuthToken(token: string | null) {
@@ -52,13 +102,37 @@ function getHeaders(includeAuth = false): HeadersInit {
   return headers
 }
 
-export async function signup(email: string, firstName: string, lastName: string, password: string): Promise<AuthResponse> {
+export async function signup(payload: SignupPayload): Promise<AuthResponse> {
+  const fullPayload = {
+    email: payload.email,
+    firstName: payload.firstName,
+    lastName: payload.lastName,
+    password: payload.password,
+    dateOfBirth: payload.dateOfBirth,
+    city: payload.city,
+  }
+  const legacyPayload = {
+    email: payload.email,
+    firstName: payload.firstName,
+    lastName: payload.lastName,
+    password: payload.password,
+  }
+
   try {
-    const res = await fetch(`${API_URL}/auth/signup`, {
+    let res = await fetch(`${API_URL}/auth/signup`, {
       method: 'POST',
       headers: getHeaders(),
-      body: JSON.stringify({ email, firstName, lastName, password }),
+      body: JSON.stringify(fullPayload),
     })
+
+    if (!res.ok && res.status === 400) {
+      res = await fetch(`${API_URL}/auth/signup`, {
+        method: 'POST',
+        headers: getHeaders(),
+        body: JSON.stringify(legacyPayload),
+      })
+    }
+
     if (!res.ok) {
       try {
         const error = await res.json()
@@ -120,5 +194,57 @@ export async function fetchEvent(id: number): Promise<Event> {
     headers: getHeaders(true),
   })
   if (!res.ok) throw new Error('Event not found')
+  return res.json()
+}
+
+export async function fetchUserPreferences(userId: number): Promise<UserPreferences> {
+  const res = await fetch(`${API_URL}/users/${userId}/preferences`, {
+    headers: getHeaders(true),
+  })
+  if (!res.ok) throw new Error(`Failed to fetch preferences (${res.status})`)
+  return res.json()
+}
+
+export async function saveUserPreferences(userId: number, payload: PreferencesPayload): Promise<UserPreferences> {
+  const res = await fetch(`${API_URL}/users/${userId}/preferences`, {
+    method: 'PUT',
+    headers: getHeaders(true),
+    body: JSON.stringify(payload),
+  })
+  if (!res.ok) throw new Error(`Failed to save preferences (${res.status})`)
+  return res.json()
+}
+
+export async function fetchUserNotifications(userId: number): Promise<NotificationItem[]> {
+  const res = await fetch(`${API_URL}/users/${userId}/notifications`, {
+    headers: getHeaders(true),
+  })
+  if (!res.ok) throw new Error(`Failed to fetch notifications (${res.status})`)
+  return res.json()
+}
+
+export async function fetchMatchDetail(matchId: number): Promise<MatchDetail> {
+  const res = await fetch(`${API_URL}/matches/${matchId}`, {
+    headers: getHeaders(true),
+  })
+  if (!res.ok) throw new Error(`Failed to fetch match (${res.status})`)
+  return res.json()
+}
+
+export async function acceptMatch(matchId: number): Promise<MatchDetail> {
+  const res = await fetch(`${API_URL}/matches/${matchId}/accept`, {
+    method: 'PUT',
+    headers: getHeaders(true),
+  })
+  if (!res.ok) throw new Error(`Failed to accept match (${res.status})`)
+  return res.json()
+}
+
+export async function rejectMatch(matchId: number): Promise<MatchDetail> {
+  const res = await fetch(`${API_URL}/matches/${matchId}/reject`, {
+    method: 'PUT',
+    headers: getHeaders(true),
+  })
+  if (!res.ok) throw new Error(`Failed to reject match (${res.status})`)
   return res.json()
 }

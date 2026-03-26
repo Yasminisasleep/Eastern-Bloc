@@ -59,6 +59,31 @@ nav {
   gap: 15px;
 }
 
+.app-tabs {
+  display: flex;
+  gap: 8px;
+}
+
+.tab-btn {
+  padding: 8px 14px;
+  font-size: 0.8em;
+  box-shadow: none;
+  background: transparent;
+  color: var(--gold);
+  border: 1px solid rgba(212, 175, 55, 0.5);
+}
+
+.tab-btn:hover {
+  box-shadow: none;
+  transform: none;
+  background: rgba(212, 175, 55, 0.15);
+}
+
+.tab-active {
+  background: var(--gold);
+  color: var(--dark-bg);
+}
+
 .user-info {
   text-align: right;
 }
@@ -144,6 +169,7 @@ label {
 input[type="text"],
 input[type="email"],
 input[type="password"],
+input[type="date"],
 select {
   width: 100%;
   padding: 12px;
@@ -159,6 +185,7 @@ select {
 input[type="text"]:focus,
 input[type="email"]:focus,
 input[type="password"]:focus,
+input[type="date"]:focus,
 select:focus {
   outline: none;
   border-color: var(--gold);
@@ -440,6 +467,176 @@ input::placeholder {
   border: 1px solid var(--gold);
 }
 
+.panel-card {
+  background: linear-gradient(135deg, rgba(26, 15, 46, 0.95) 0%, rgba(107, 20, 35, 0.25) 100%);
+  border: 2px solid var(--gold);
+  border-radius: 10px;
+  padding: 30px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+}
+
+.panel-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 12px;
+}
+
+.panel-title {
+  color: var(--gold);
+  font-size: 1.8em;
+}
+
+.panel-subtitle {
+  color: #b8956a;
+  margin-bottom: 22px;
+}
+
+.chip-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.chip {
+  background: transparent;
+  color: var(--gold);
+  border: 1px solid rgba(212, 175, 55, 0.5);
+  box-shadow: none;
+  padding: 8px 14px;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.chip:hover {
+  transform: none;
+  box-shadow: none;
+  background: rgba(212, 175, 55, 0.15);
+}
+
+.chip-active {
+  background: var(--gold);
+  color: var(--dark-bg);
+}
+
+input[type="range"] {
+  width: 100%;
+  accent-color: var(--gold);
+}
+
+.field-help {
+  color: #b8956a;
+  font-size: 0.85em;
+}
+
+.success-message {
+  color: #5edc8d;
+  margin-top: 8px;
+}
+
+.badge-count {
+  color: var(--dark-bg);
+  background: var(--gold);
+  border-radius: 999px;
+  padding: 6px 10px;
+  font-size: 0.9em;
+  font-weight: bold;
+}
+
+.notifications-list {
+  display: grid;
+  gap: 14px;
+}
+
+.notification-card {
+  border: 1px solid rgba(212, 175, 55, 0.35);
+  border-radius: 8px;
+  padding: 16px;
+  display: flex;
+  justify-content: space-between;
+  gap: 15px;
+  background: rgba(232, 230, 225, 0.03);
+}
+
+.notification-unread {
+  border-color: var(--gold);
+  background: rgba(212, 175, 55, 0.09);
+}
+
+.notification-message {
+  color: var(--cream);
+  margin-bottom: 6px;
+}
+
+.notification-meta,
+.notification-target {
+  color: #b8956a;
+  font-size: 0.92em;
+}
+
+.notification-actions {
+  display: flex;
+  align-items: center;
+}
+
+.match-detail-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 14px;
+}
+
+.match-status-row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.status-pill,
+.score-pill {
+  border-radius: 999px;
+  padding: 6px 10px;
+  font-weight: bold;
+  font-size: 0.85em;
+}
+
+.score-pill {
+  color: var(--dark-bg);
+  background: rgba(212, 175, 55, 0.85);
+}
+
+.status-pending { background: #c39c3f; color: #1a1a1a; }
+.status-accepted { background: #2f9e44; color: #f5f5f5; }
+.status-rejected { background: #c92a2a; color: #f5f5f5; }
+.status-confirmed { background: #1971c2; color: #f5f5f5; }
+.status-cancelled { background: #495057; color: #f5f5f5; }
+
+.match-section {
+  border-top: 1px solid rgba(212, 175, 55, 0.2);
+  padding-top: 14px;
+  margin-top: 14px;
+}
+
+.match-section h3 {
+  color: var(--gold);
+  margin-bottom: 8px;
+}
+
+.danger-outline {
+  background: transparent;
+  color: #ff8d8d;
+  border: 1px solid rgba(255, 141, 141, 0.8);
+  box-shadow: none;
+}
+
+.danger-outline:hover {
+  background: rgba(255, 141, 141, 0.15);
+  transform: none;
+  box-shadow: none;
+}
+
 /* Loading & Empty States */
 .loading {
   text-align: center;
@@ -496,6 +693,31 @@ input::placeholder {
   .nav-user {
     width: 100%;
     justify-content: space-between;
+    flex-wrap: wrap;
+  }
+
+  .app-tabs {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .panel-card {
+    padding: 22px 16px;
+  }
+
+  .panel-title-row,
+  .match-detail-header,
+  .notification-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .notification-actions {
+    width: 100%;
+  }
+
+  .notification-actions button {
+    width: 100%;
   }
 }
 

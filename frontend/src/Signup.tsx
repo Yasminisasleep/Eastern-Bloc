@@ -11,6 +11,8 @@ export default function Signup({ onToggleForm }: Props) {
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
   const [password, setPassword] = useState('')
+  const [dateOfBirth, setDateOfBirth] = useState('')
+  const [city, setCity] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -30,10 +32,37 @@ export default function Signup({ onToggleForm }: Props) {
       return
     }
 
+    if (!/[A-Z]/.test(password)) {
+      setError('Password must include at least one uppercase letter')
+      return
+    }
+
+    if (!/\d/.test(password)) {
+      setError('Password must include at least one digit')
+      return
+    }
+
+    if (!dateOfBirth) {
+      setError('Date of birth is required')
+      return
+    }
+
+    if (!city.trim()) {
+      setError('City is required')
+      return
+    }
+
     setLoading(true)
 
     try {
-      const response = await signup(email, firstName, lastName, password)
+      const response = await signup({
+        email,
+        firstName,
+        lastName,
+        password,
+        dateOfBirth,
+        city,
+      })
       login(response.token, response.email, response.firstName, response.lastName)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Signup failed')
@@ -86,6 +115,27 @@ export default function Signup({ onToggleForm }: Props) {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="••••••••"
+            required
+          />
+        </div>
+
+        <div className="form-group">
+          <label>Date of Birth</label>
+          <input
+            type="date"
+            value={dateOfBirth}
+            onChange={(e) => setDateOfBirth(e.target.value)}
+            required
+          />
+        </div>
+
+        <div className="form-group">
+          <label>City</label>
+          <input
+            type="text"
+            value={city}
+            onChange={(e) => setCity(e.target.value)}
+            placeholder="Paris"
             required
           />
         </div>
