@@ -11,7 +11,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
@@ -29,23 +28,13 @@ class AuthServiceTest {
     private BCryptPasswordEncoder passwordEncoder;
     private JwtTokenProvider jwtTokenProvider;
 
-    @TestConfiguration
-    static class TestConfig {
-        @Bean
-        public BCryptPasswordEncoder passwordEncoder() {
-            return new BCryptPasswordEncoder();
-        }
-
-        @Bean
-        public JwtTokenProvider jwtTokenProvider() {
-            return new JwtTokenProvider();
-        }
-    }
+    private static final String TEST_SECRET = "ThisIsAVeryLongSecretKeyForJWTSigningPurposesOnlyDoNotUseInProduction";
+    private static final long TEST_EXPIRATION = 86400000L;
 
     @BeforeEach
     void setUp() {
         passwordEncoder = new BCryptPasswordEncoder();
-        jwtTokenProvider = new JwtTokenProvider();
+        jwtTokenProvider = new JwtTokenProvider(TEST_SECRET, TEST_EXPIRATION);
         authService = new AuthService(userRepository, jwtTokenProvider, passwordEncoder);
         userRepository.deleteAll();
     }

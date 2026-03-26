@@ -10,10 +10,12 @@ class JwtTokenProviderTest {
 
     private JwtTokenProvider jwtTokenProvider;
     private static final String TEST_EMAIL = "test@example.com";
+    private static final String TEST_SECRET = "ThisIsAVeryLongSecretKeyForJWTSigningPurposesOnlyDoNotUseInProduction";
+    private static final long TEST_EXPIRATION = 86400000L;
 
     @BeforeEach
     void setUp() {
-        jwtTokenProvider = new JwtTokenProvider();
+        jwtTokenProvider = new JwtTokenProvider(TEST_SECRET, TEST_EXPIRATION);
     }
 
     @Test
