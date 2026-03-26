@@ -1,6 +1,5 @@
 package com.kulto.exception;
 
-import com.kulto.service.ResourceNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
