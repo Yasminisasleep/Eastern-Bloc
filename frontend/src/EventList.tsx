@@ -6,6 +6,14 @@ interface Props {
 }
 
 const CATEGORIES = ['CINEMA', 'CONCERT', 'EXHIBITION', 'THEATRE', 'FESTIVAL']
+const ICONS = {
+  CINEMA: '🎬',
+  CONCERT: '🎵',
+  EXHIBITION: '🖼️',
+  THEATRE: '🎭',
+  FESTIVAL: '🎪',
+  DEFAULT: '🎨',
+}
 
 export default function EventList({ onSelect }: Props) {
   const [events, setEvents] = useState<Event[]>([])
@@ -25,17 +33,22 @@ export default function EventList({ onSelect }: Props) {
       .finally(() => setLoading(false))
   }, [category, search])
 
+  const getIcon = (cat: string): string => {
+    return ICONS[cat as keyof typeof ICONS] || ICONS.DEFAULT
+  }
+
   return (
-    <div>
-      <div style={{ display: 'flex', gap: '8px', marginBottom: '16px', flexWrap: 'wrap' }}>
+    <div className="events-header">
+      <h2>Upcoming Events</h2>
+      
+      <div className="filters">
         <input
           type="text"
           placeholder="Search events..."
           value={search}
           onChange={e => setSearch(e.target.value)}
-          style={{ padding: '8px', flex: 1, minWidth: '200px' }}
         />
-        <select value={category} onChange={e => setCategory(e.target.value)} style={{ padding: '8px' }}>
+        <select value={category} onChange={e => setCategory(e.target.value)}>
           <option value="">All categories</option>
           {CATEGORIES.map(c => (
             <option key={c} value={c}>{c.charAt(0) + c.slice(1).toLowerCase()}</option>
@@ -43,30 +56,36 @@ export default function EventList({ onSelect }: Props) {
         </select>
       </div>
 
-      {loading && <p>Loading...</p>}
+      {loading && <div className="loading">🎭 Loading events...</div>}
 
-      {!loading && events.length === 0 && <p>No events found.</p>}
+      {!loading && events.length === 0 && (
+        <div className="empty-state">No events found. Check back soon!</div>
+      )}
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '16px' }}>
+      <div className="events-grid">
         {events.map(event => (
           <div
             key={event.id}
+            className="event-card"
             onClick={() => onSelect(event.id)}
-            style={{
-              border: '1px solid #ddd',
-              borderRadius: '8px',
-              padding: '16px',
-              cursor: 'pointer',
-            }}
           >
-            <h3 style={{ margin: '0 0 8px' }}>{event.title}</h3>
-            <p style={{ margin: '0 0 4px', color: '#666', fontSize: '14px' }}>
-              {event.category.charAt(0) + event.category.slice(1).toLowerCase()}
-            </p>
-            <p style={{ margin: '0 0 4px', fontSize: '14px' }}>
-              {new Date(event.date).toLocaleDateString()} at {event.venue}
-            </p>
-            <p style={{ margin: 0, fontSize: '14px', color: '#888' }}>{event.city}</p>
+            <div className="event-image">
+              {getIcon(event.category)}
+            </div>
+            <div className="event-content">
+              <div className="event-category">
+                {event.category.charAt(0) + event.category.slice(1).toLowerCase()}
+              </div>
+              <h3 className="event-title">{event.title}</h3>
+              <div className="event-meta">
+                <span>📅 {new Date(event.date).toLocaleDateString()}</span>
+                <span>📍 {event.city}</span>
+              </div>
+              {event.price && <div className="event-price">${event.price.toFixed(2)}</div>}
+              {event.description && (
+                <p className="event-description">{event.description}</p>
+              )}
+            </div>
           </div>
         ))}
       </div>

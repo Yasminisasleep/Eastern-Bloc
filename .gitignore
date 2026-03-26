@@ -5,6 +5,7 @@ target/
 *.war
 *.ear
 hs_err_pid*
+*.env
 
 # Maven
 .mvn/timing.properties

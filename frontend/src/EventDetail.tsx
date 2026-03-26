@@ -6,6 +6,15 @@ interface Props {
   onBack: () => void
 }
 
+const ICONS = {
+  CINEMA: '🎬',
+  CONCERT: '🎵',
+  EXHIBITION: '🖼️',
+  THEATRE: '🎭',
+  FESTIVAL: '🎪',
+  DEFAULT: '🎨',
+}
+
 export default function EventDetail({ eventId, onBack }: Props) {
   const [event, setEvent] = useState<Event | null>(null)
   const [error, setError] = useState(false)
@@ -16,46 +25,84 @@ export default function EventDetail({ eventId, onBack }: Props) {
       .catch(() => setError(true))
   }, [eventId])
 
-  if (error) return <p>Event not found.</p>
-  if (!event) return <p>Loading...</p>
+  if (error) return <div className="empty-state">Event not found.</div>
+  if (!event) return <div className="loading">🎭 Loading event...</div>
+
+  const getIcon = (cat: string): string => {
+    return ICONS[cat as keyof typeof ICONS] || ICONS.DEFAULT
+  }
 
   return (
-    <div>
-      <button onClick={onBack} style={{ marginBottom: '16px', padding: '8px 16px', cursor: 'pointer' }}>
-        Back
-      </button>
-
-      <h2>{event.title}</h2>
-      <p style={{ color: '#666' }}>
-        {event.category.charAt(0) + event.category.slice(1).toLowerCase()}
-      </p>
-
-      <p>{event.description}</p>
-
-      <table style={{ borderCollapse: 'collapse', marginTop: '16px' }}>
-        <tbody>
-          <tr><td style={{ padding: '4px 16px 4px 0', fontWeight: 'bold' }}>Date</td><td>{new Date(event.date).toLocaleString()}</td></tr>
-          <tr><td style={{ padding: '4px 16px 4px 0', fontWeight: 'bold' }}>Venue</td><td>{event.venue}</td></tr>
-          <tr><td style={{ padding: '4px 16px 4px 0', fontWeight: 'bold' }}>City</td><td>{event.city}</td></tr>
-          {event.price && <tr><td style={{ padding: '4px 16px 4px 0', fontWeight: 'bold' }}>Price</td><td>{event.price}EUR</td></tr>}
-        </tbody>
-      </table>
-
-      {event.tags && event.tags.length > 0 && (
-        <div style={{ marginTop: '16px', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-          {event.tags.map(tag => (
-            <span key={tag} style={{ background: '#eee', padding: '4px 10px', borderRadius: '12px', fontSize: '13px' }}>
-              {tag}
-            </span>
-          ))}
+    <div className="event-detail">
+      <div className="event-detail-header">
+        <div>
+          <h2 className="event-detail-title">{event.title}</h2>
+          <div className="event-category">
+            {event.category.charAt(0) + event.category.slice(1).toLowerCase()}
+          </div>
         </div>
-      )}
+        <button className="back-button" onClick={onBack}>← Back</button>
+      </div>
 
-      {event.externalLink && (
-        <p style={{ marginTop: '16px' }}>
-          <a href={event.externalLink} target="_blank" rel="noreferrer">More info</a>
-        </p>
-      )}
+      <div className="event-detail-content">
+        <div className="event-detail-main">
+          <h3>Description</h3>
+          <p>{event.description || 'No description available.'}</p>
+
+          <div className="event-details-info">
+            <div className="info-row">
+              <span className="info-label">📅 Date</span>
+              <span>{new Date(event.date).toLocaleString()}</span>
+            </div>
+            <div className="info-row">
+              <span className="info-label">📍 Venue</span>
+              <span>{event.venue}</span>
+            </div>
+            <div className="info-row">
+              <span className="info-label">🏙️ City</span>
+              <span>{event.city}</span>
+            </div>
+            {event.price && (
+              <div className="info-row">
+                <span className="info-label">💰 Price</span>
+                <span>${event.price.toFixed(2)}</span>
+              </div>
+            )}
+          </div>
+
+          {event.externalLink && (
+            <button onClick={() => window.open(event.externalLink || '', '_blank')}>
+              Get Tickets
+            </button>
+          )}
+        </div>
+
+        <div>
+          <h3>Event Info</h3>
+          <div style={{ fontSize: '4em', textAlign: 'center', margin: '30px 0' }}>
+            {getIcon(event.category)}
+          </div>
+
+          {event.tags && event.tags.length > 0 && (
+            <div>
+              <h3>Tags</h3>
+              <div className="tags">
+                {event.tags.map(tag => (
+                  <span key={tag} className="tag">#{tag}</span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {event.source && (
+            <div style={{ marginTop: '30px', paddingTop: '20px', borderTop: '2px solid rgba(212, 175, 55, 0.2)' }}>
+              <p style={{ color: '#b8956a', fontSize: '0.9em' }}>
+                Source: <strong>{event.source}</strong>
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   )
 }
