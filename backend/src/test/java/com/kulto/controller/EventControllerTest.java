@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -42,6 +43,7 @@ class EventControllerTest {
     }
 
     @Test
+    @WithMockUser
     void createEvent_returnsCreated() throws Exception {
         EventRequest request = new EventRequest();
         request.setTitle("Test Concert");
@@ -62,6 +64,7 @@ class EventControllerTest {
     }
 
     @Test
+    @WithMockUser
     void createEvent_withPastDate_returnsBadRequest() throws Exception {
         EventRequest request = new EventRequest();
         request.setTitle("Old Event");
@@ -113,6 +116,7 @@ class EventControllerTest {
     }
 
     @Test
+    @WithMockUser
     void updateEvent_returnsUpdated() throws Exception {
         Event event = createSampleEvent("Original", EventCategory.THEATRE);
 
@@ -133,6 +137,7 @@ class EventControllerTest {
     }
 
     @Test
+    @WithMockUser
     void deleteEvent_softDeletes() throws Exception {
         Event event = createSampleEvent("To Delete", EventCategory.FESTIVAL);
 
