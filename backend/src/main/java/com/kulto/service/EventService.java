@@ -5,6 +5,7 @@ import com.kulto.domain.EventCategory;
 import com.kulto.domain.EventStatus;
 import com.kulto.dto.EventRequest;
 import com.kulto.dto.EventResponse;
+import com.kulto.exception.ResourceNotFoundException;
 import com.kulto.repository.EventRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
