@@ -39,11 +39,11 @@ public class JwtTokenProvider {
      * Extracts email from a JWT token.
      */
     public String getEmailFromToken(String token) {
-        return Jwts.parserBuilder()
-                .setSigningKey(key)
+        return Jwts.parser()
+                .verifyWith((javax.crypto.SecretKey) key)
                 .build()
-                .parseClaimsJws(token)
-                .getBody()
+                .parseSignedClaims(token)
+                .getPayload()
                 .getSubject();
     }
 
@@ -52,10 +52,10 @@ public class JwtTokenProvider {
      */
     public boolean validateToken(String token) {
         try {
-            Jwts.parserBuilder()
-                    .setSigningKey(key)
+            Jwts.parser()
+                    .verifyWith((javax.crypto.SecretKey) key)
                     .build()
-                    .parseClaimsJws(token);
+                    .parseSignedClaims(token);
             return true;
         } catch (JwtException | IllegalArgumentException e) {
             return false;
