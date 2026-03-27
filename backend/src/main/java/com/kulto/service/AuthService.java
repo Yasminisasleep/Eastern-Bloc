@@ -4,6 +4,7 @@ import com.kulto.domain.User;
 import com.kulto.dto.AuthResponse;
 import com.kulto.dto.LoginRequest;
 import com.kulto.dto.SignupRequest;
+import com.kulto.dto.UserProfileResponse;
 import com.kulto.exception.AuthenticationException;
 import com.kulto.repository.UserRepository;
 import com.kulto.security.JwtTokenProvider;
@@ -62,5 +63,20 @@ public class AuthService {
     public User findByEmail(String email) {
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> new AuthenticationException("User not found"));
+    }
+
+    public static UserProfileResponse toProfileResponse(User user) {
+        return UserProfileResponse.builder()
+                .id(user.getId())
+                .email(user.getEmail())
+                .displayName(user.getDisplayName() != null ? user.getDisplayName()
+                        : user.getFirstName() + " " + user.getLastName())
+                .photoUrl(user.getPhotoUrl())
+                .bio(user.getBio())
+                .city(user.getCity())
+                .role(user.getRole())
+                .preferredCategories(user.getPreferredCategories())
+                .tasteTags(user.getTasteTags())
+                .build();
     }
 }

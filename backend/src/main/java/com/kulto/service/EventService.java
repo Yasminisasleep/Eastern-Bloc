@@ -3,9 +3,11 @@ package com.kulto.service;
 import com.kulto.domain.Event;
 import com.kulto.domain.EventCategory;
 import com.kulto.domain.EventStatus;
+import com.kulto.domain.User;
 import com.kulto.dto.EventRequest;
 import com.kulto.dto.EventResponse;
 import com.kulto.exception.ResourceNotFoundException;
+import com.kulto.repository.EventInterestRepository;
 import com.kulto.repository.EventRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -19,6 +21,7 @@ import java.time.LocalDateTime;
 public class EventService {
 
     private final EventRepository eventRepository;
+    private final EventInterestRepository eventInterestRepository;
 
     public EventResponse create(EventRequest request) {
         Event event = Event.builder()
@@ -41,15 +44,30 @@ public class EventService {
                                      LocalDateTime from, LocalDateTime to,
                                      String q, Pageable pageable) {
         return eventRepository.findFiltered(
-                EventStatus.ACTIVE, LocalDateTime.now(),
-                category, city, from, to, q, pageable
+                EventStatus.ACTIVE.name(), LocalDateTime.now(),
+                category != null ? category.name() : null, city, from, to, q, pageable
         ).map(this::toResponse);
+    }
+
+    public Page<EventResponse> list(EventCategory category, String city,
+                                     LocalDateTime from, LocalDateTime to,
+                                     String q, User currentUser, Pageable pageable) {
+        return eventRepository.findFiltered(
+                EventStatus.ACTIVE.name(), LocalDateTime.now(),
+                category != null ? category.name() : null, city, from, to, q, pageable
+        ).map(event -> toResponse(event, currentUser));
     }
 
     public EventResponse getById(Long id) {
         Event event = eventRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Event not found: " + id));
         return toResponse(event);
+    }
+
+    public EventResponse getById(Long id, User currentUser) {
+        Event event = eventRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Event not found: " + id));
+        return toResponse(event, currentUser);
     }
 
     public EventResponse update(Long id, EventRequest request) {
@@ -91,6 +109,51 @@ public class EventService {
                 .source(event.getSource())
                 .status(event.getStatus())
                 .createdAt(event.getCreatedAt())
+                .wantToGoCount(eventInterestRepository.countByEvent(event))
+                .build();
+    }
+
+    private EventResponse toResponse(Event event, User currentUser) {
+        boolean interested = currentUser != null
+                && eventInterestRepository.existsByUserAndEvent(currentUser, event);
+        return EventResponse.builder()
+                .id(event.getId())
+                .title(event.getTitle())
+                .description(event.getDescription())
+                .category(event.getCategory())
+                .date(event.getDate())
+                .venue(event.getVenue())
+                .city(event.getCity())
+                .imageUrl(event.getImageUrl())
+                .price(event.getPrice())
+                .externalLink(event.getExternalLink())
+                .tags(event.getTags())
+                .source(event.getSource())
+                .status(event.getStatus())
+                .createdAt(event.getCreatedAt())
+                .wantToGoCount(eventInterestRepository.countByEvent(event))
+                .currentUserInterested(interested)
+                .build();
+    }
+
+    public EventResponse toResponsePublic(Event event, long interestCount, boolean currentUserInterested) {
+        return EventResponse.builder()
+                .id(event.getId())
+                .title(event.getTitle())
+                .description(event.getDescription())
+                .category(event.getCategory())
+                .date(event.getDate())
+                .venue(event.getVenue())
+                .city(event.getCity())
+                .imageUrl(event.getImageUrl())
+                .price(event.getPrice())
+                .externalLink(event.getExternalLink())
+                .tags(event.getTags())
+                .source(event.getSource())
+                .status(event.getStatus())
+                .createdAt(event.getCreatedAt())
+                .wantToGoCount(interestCount)
+                .currentUserInterested(currentUserInterested)
                 .build();
     }
 }

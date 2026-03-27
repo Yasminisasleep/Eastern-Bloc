@@ -1,5 +1,9 @@
 const API_URL = import.meta.env.VITE_API_URL || '/api'
 
+// ── Types ────────────────────────────────────────────────────────────────
+
+export type Category = 'CINEMA' | 'CONCERT' | 'EXHIBITION' | 'THEATRE' | 'FESTIVAL'
+
 export interface Event {
   id: number
   title: string
@@ -14,6 +18,8 @@ export interface Event {
   tags: string[]
   source: string
   status: string
+  wantToGoCount: number
+  currentUserInterested: boolean
 }
 
 export interface PageResponse<T> {
@@ -24,6 +30,18 @@ export interface PageResponse<T> {
   size: number
 }
 
+export interface User {
+  id: number
+  email: string
+  displayName: string
+  photoUrl: string | null
+  bio: string | null
+  city: string | null
+  role: string
+  preferredCategories: Category[]
+  tasteTags: string[]
+}
+
 export interface AuthResponse {
   token: string
   type: string
@@ -32,93 +50,152 @@ export interface AuthResponse {
   lastName: string
 }
 
-let authToken: string | null = null
-
-export function setAuthToken(token: string | null) {
-  authToken = token
+export interface Match {
+  id: number
+  event: Event
+  matchedUser: User
+  compatibilityScore: number
+  status: 'PENDING' | 'CONFIRMED' | 'REJECTED' | 'EXPIRED'
+  myAccepted: boolean | null
+  theirAccepted: boolean | null
+  expiresAt: string
+  createdAt: string
 }
 
+// ── Token management ─────────────────────────────────────────────────────
+
+let authToken: string | null = localStorage.getItem('authToken')
+
+export function setToken(token: string) {
+  authToken = token
+  localStorage.setItem('authToken', token)
+}
+
+export function getToken(): string | null {
+  return authToken
+}
+
+export function clearToken() {
+  authToken = null
+  localStorage.removeItem('authToken')
+  localStorage.removeItem('authUser')
+}
+
+// Keep backward compat with Maria's code
+export function setAuthToken(token: string | null) {
+  if (token) setToken(token)
+  else clearToken()
+}
 export function getAuthToken(): string | null {
   return authToken
 }
 
-function getHeaders(includeAuth = false): HeadersInit {
-  const headers: HeadersInit = {
-    'Content-Type': 'application/json',
-  }
-  if (includeAuth && authToken) {
-    headers['Authorization'] = `Bearer ${authToken}`
-  }
-  return headers
+// ── Helpers ──────────────────────────────────────────────────────────────
+
+function headers(auth = false): HeadersInit {
+  const h: HeadersInit = { 'Content-Type': 'application/json' }
+  if (auth && authToken) h['Authorization'] = `Bearer ${authToken}`
+  return h
 }
 
-export async function signup(email: string, firstName: string, lastName: string, password: string): Promise<AuthResponse> {
-  try {
-    const res = await fetch(`${API_URL}/auth/signup`, {
-      method: 'POST',
-      headers: getHeaders(),
-      body: JSON.stringify({ email, firstName, lastName, password }),
-    })
-    if (!res.ok) {
-      try {
-        const error = await res.json()
-        throw new Error(error.message || `Signup failed with status ${res.status}`)
-      } catch (e) {
-        if (e instanceof Error) throw e
-        throw new Error(`Signup failed with status ${res.status}`)
-      }
-    }
-    const data = await res.json()
-    setAuthToken(data.token)
-    return data
-  } catch (e) {
-    if (e instanceof TypeError && e.message.includes('fetch')) {
-      throw new Error('NetworkError when attempting to fetch resource on sign up. Backend may not be running.')
-    }
-    throw e
+async function request<T>(url: string, opts?: RequestInit): Promise<T> {
+  const res = await fetch(url, opts)
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}))
+    throw new Error(body.message || `Request failed (${res.status})`)
   }
+  return res.json()
+}
+
+// ── Auth API ─────────────────────────────────────────────────────────────
+
+export const authApi = {
+  login: (email: string, password: string) =>
+    request<AuthResponse & { user?: User }>(`${API_URL}/auth/login`, {
+      method: 'POST', headers: headers(), body: JSON.stringify({ email, password }),
+    }),
+
+  register: (email: string, password: string, displayName: string) =>
+    request<AuthResponse & { user?: User }>(`${API_URL}/auth/signup`, {
+      method: 'POST', headers: headers(),
+      body: JSON.stringify({ email, firstName: displayName, lastName: '', password }),
+    }),
+}
+
+// ── Backward compat for Maria's old standalone functions ─────────────────
+
+export async function signup(email: string, firstName: string, lastName: string, password: string): Promise<AuthResponse> {
+  const data = await request<AuthResponse>(`${API_URL}/auth/signup`, {
+    method: 'POST', headers: headers(), body: JSON.stringify({ email, firstName, lastName, password }),
+  })
+  setToken(data.token)
+  return data
 }
 
 export async function login(email: string, password: string): Promise<AuthResponse> {
-  try {
-    const res = await fetch(`${API_URL}/auth/login`, {
-      method: 'POST',
-      headers: getHeaders(),
-      body: JSON.stringify({ email, password }),
-    })
-    if (!res.ok) {
-      try {
-        const error = await res.json()
-        throw new Error(error.message || `Login failed with status ${res.status}`)
-      } catch (e) {
-        if (e instanceof Error) throw e
-        throw new Error(`Login failed with status ${res.status}`)
-      }
-    }
-    const data = await res.json()
-    setAuthToken(data.token)
-    return data
-  } catch (e) {
-    if (e instanceof TypeError && e.message.includes('fetch')) {
-      throw new Error('NetworkError when attempting to fetch resource on login. Backend may not be running.')
-    }
-    throw e
-  }
+  const data = await request<AuthResponse>(`${API_URL}/auth/login`, {
+    method: 'POST', headers: headers(), body: JSON.stringify({ email, password }),
+  })
+  setToken(data.token)
+  return data
 }
 
 export async function fetchEvents(params?: Record<string, string>): Promise<PageResponse<Event>> {
   const query = params ? '?' + new URLSearchParams(params).toString() : ''
-  const res = await fetch(`${API_URL}/events${query}`, {
-    headers: getHeaders(true),
-  })
-  if (!res.ok) throw new Error('Failed to fetch events')
-  return res.json()
+  return request<PageResponse<Event>>(`${API_URL}/events${query}`, { headers: headers(true) })
 }
 
 export async function fetchEvent(id: number): Promise<Event> {
-  const res = await fetch(`${API_URL}/events/${id}`, {
-    headers: getHeaders(true),
-  })
-  if (!res.ok) throw new Error('Event not found')
-  return res.json()
+  return request<Event>(`${API_URL}/events/${id}`, { headers: headers(true) })
+}
+
+// ── Events API ───────────────────────────────────────────────────────────
+
+export const eventsApi = {
+  list: (params?: { category?: string; city?: string; q?: string; page?: number }) => {
+    const p: Record<string, string> = {}
+    if (params?.category) p.category = params.category
+    if (params?.city) p.city = params.city
+    if (params?.q) p.q = params.q
+    if (params?.page !== undefined) p.page = String(params.page)
+    const query = Object.keys(p).length ? '?' + new URLSearchParams(p).toString() : ''
+    return request<PageResponse<Event>>(`${API_URL}/events${query}`, { headers: headers(true) })
+  },
+
+  get: (id: number) =>
+    request<Event>(`${API_URL}/events/${id}`, { headers: headers(true) }),
+
+  expressInterest: (eventId: number) =>
+    fetch(`${API_URL}/events/${eventId}/interest`, { method: 'POST', headers: headers(true) }),
+
+  removeInterest: (eventId: number) =>
+    fetch(`${API_URL}/events/${eventId}/interest`, { method: 'DELETE', headers: headers(true) }),
+}
+
+// ── Matches API ──────────────────────────────────────────────────────────
+
+export const matchesApi = {
+  getMatches: () =>
+    request<Match[]>(`${API_URL}/matches`, { headers: headers(true) }),
+
+  getOutings: () =>
+    request<Match[]>(`${API_URL}/outings`, { headers: headers(true) }),
+
+  accept: (id: number) =>
+    request<Match>(`${API_URL}/matches/${id}/accept`, { method: 'POST', headers: headers(true) }),
+
+  reject: (id: number) =>
+    request<Match>(`${API_URL}/matches/${id}/reject`, { method: 'POST', headers: headers(true) }),
+}
+
+// ── User API ─────────────────────────────────────────────────────────────
+
+export const userApi = {
+  me: () =>
+    request<User>(`${API_URL}/users/me`, { headers: headers(true) }),
+
+  updateMe: (data: Partial<User>) =>
+    request<User>(`${API_URL}/users/me`, {
+      method: 'PUT', headers: headers(true), body: JSON.stringify(data),
+    }),
 }

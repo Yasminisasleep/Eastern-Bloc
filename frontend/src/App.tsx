@@ -1,67 +1,46 @@
-import { useState, useEffect } from 'react'
-import { useAuth } from './AuthContext'
-import { setAuthToken } from './api'
-import EventList from './EventList'
-import EventDetail from './EventDetail'
-import Login from './Login'
-import Signup from './Signup'
-import Landing from './Landing'
+import { Routes, Route, Navigate } from 'react-router-dom'
+import { useAuth } from './context/AuthContext'
+import Discover from './pages/Discover'
+import EventDetailPage from './pages/EventDetail'
+import MyOutings from './pages/MyOutings'
+import Onboarding from './pages/Onboarding'
+import Profile from './pages/Profile'
+import Login from './pages/Login'
+import Register from './pages/Register'
 
-function App() {
-  const [selectedEventId, setSelectedEventId] = useState<number | null>(null)
-  const [showSignup, setShowSignup] = useState(false)
-  const [showLogin, setShowLogin] = useState(false)
-  const { isAuthenticated, user, token, logout } = useAuth()
+function ProtectedRoute({ children }: { children: React.ReactNode }) {
+  const { user, loading } = useAuth()
+  if (loading) return <div className="loading">Loading...</div>
+  if (!user) return <Navigate to="/login" replace />
+  return <>{children}</>
+}
 
-  useEffect(() => {
-    if (token) {
-      setAuthToken(token)
-    }
-  }, [token])
+function GuestRoute({ children }: { children: React.ReactNode }) {
+  const { user, loading } = useAuth()
+  if (loading) return <div className="loading">Loading...</div>
+  if (user) return <Navigate to="/discover" replace />
+  return <>{children}</>
+}
 
-  const handleLogout = () => {
-    logout()
-    setSelectedEventId(null)
-  }
+export default function App() {
+  const { user, loading } = useAuth()
 
-  if (!isAuthenticated) {
-    if (showSignup) {
-      return <Signup onToggleForm={() => { setShowSignup(false); setShowLogin(true) }} />
-    }
-    if (showLogin) {
-      return <Login onToggleForm={() => { setShowLogin(false); setShowSignup(true) }} />
-    }
-    return <Landing onLogin={() => setShowLogin(true)} onSignup={() => setShowSignup(true)} />
+  if (loading) {
+    return <div className="loading">Loading...</div>
   }
 
   return (
-    <div>
-      <header>
-        <div className="header-container">
-          <h1>Kulto</h1>
-          <nav>
-            {user && (
-              <div className="nav-user">
-                <div className="user-info">
-                  <div className="user-name">{user.firstName} {user.lastName}</div>
-                  <div className="user-email">{user.email}</div>
-                </div>
-                <button className="logout" onClick={handleLogout}>Logout</button>
-              </div>
-            )}
-          </nav>
-        </div>
-      </header>
-
-      <div className="main-container">
-        {selectedEventId ? (
-          <EventDetail eventId={selectedEventId} onBack={() => setSelectedEventId(null)} />
-        ) : (
-          <EventList onSelect={setSelectedEventId} />
-        )}
-      </div>
-    </div>
+    <>
+      <Routes>
+        <Route path="/login" element={<GuestRoute><Login /></GuestRoute>} />
+        <Route path="/register" element={<GuestRoute><Register /></GuestRoute>} />
+        <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
+        <Route path="/discover" element={<ProtectedRoute><Discover /></ProtectedRoute>} />
+        <Route path="/events/:id" element={<ProtectedRoute><EventDetailPage /></ProtectedRoute>} />
+        <Route path="/outings" element={<ProtectedRoute><MyOutings /></ProtectedRoute>} />
+        <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+        <Route path="*" element={<Navigate to={user ? '/discover' : '/login'} replace />} />
+      </Routes>
+    </>
   )
 }
-
-export default App

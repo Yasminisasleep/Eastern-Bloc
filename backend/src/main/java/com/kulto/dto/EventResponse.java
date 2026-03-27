@@ -26,4 +26,6 @@ public class EventResponse {
     private String source;
     private EventStatus status;
     private LocalDateTime createdAt;
+    private long wantToGoCount;
+    private boolean currentUserInterested;
 }
