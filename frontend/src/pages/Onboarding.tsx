@@ -57,77 +57,96 @@ export default function Onboarding() {
   }
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      {/* Progress */}
-      <header className="flex items-center justify-between px-4 py-4 border-b border-surface-high">
+    <div className="app-shell flex min-h-screen flex-col">
+      <header className="border-b border-outline-soft bg-[rgba(11,16,22,0.58)] backdrop-blur-xl">
+        <div className="page-wrap flex items-center justify-between px-1 py-4">
         {step > 1
-          ? <button onClick={() => setStep(s => s - 1)} className="text-on-surface-muted">
+          ? <button onClick={() => setStep(s => s - 1)} className="secondary-btn px-4 py-2 text-sm">
               <span className="material-symbols-rounded">arrow_back</span>
             </button>
           : <div />
         }
-        <span className="text-[13px] text-on-surface-muted">{step} of 3</span>
-        <button onClick={() => navigate('/discover')} className="text-[13px] text-on-surface-muted">Skip</button>
+        <span className="text-sm font-semibold text-on-surface-muted">{step} of 3</span>
+        <button onClick={() => navigate('/discover')} className="secondary-btn px-4 py-2 text-sm">Skip</button>
+        </div>
       </header>
 
-      <div className="flex-1 px-6 pt-6">
+      <div className="page-wrap flex-1 px-1 py-6">
+        <div className="grid gap-6 lg:grid-cols-[0.92fr_1.08fr]">
+          <aside className="hero-card rounded-[32px] p-6 md:p-8">
+            <p className="eyebrow">Onboarding</p>
+            <h1 className="mt-3 text-4xl leading-tight text-on-surface md:text-5xl">
+              Tune your profile for better cultural chemistry.
+            </h1>
+            <p className="mt-4 text-sm leading-7 text-on-surface-muted">
+              A short bio, a few categories, and some tags are enough to make the app feel intentional instead of random.
+            </p>
+            <div className="mt-8 flex gap-2">
+              {[1, 2, 3].map(index => (
+                <div key={index} className={`h-2 flex-1 rounded-full ${index <= step ? 'bg-primary-mid' : 'bg-[rgba(255,255,255,0.08)]'}`} />
+              ))}
+            </div>
+          </aside>
+
+          <section className="glass-card rounded-[32px] p-6 md:p-8">
         {step === 1 && (
           <div className="space-y-4">
-            <h2 className="text-[22px] font-bold">Tell us about you</h2>
+            <h2 className="text-4xl text-on-surface">Tell us about you</h2>
+            <p className="text-sm text-on-surface-muted">A quick vibe check helps your profile feel human.</p>
             <div className="flex justify-center">
-              <div className="w-24 h-24 rounded-full bg-surface-low flex items-center justify-center text-on-surface-muted cursor-pointer hover:bg-surface-high">
+              <div className="glass-card flex h-28 w-28 items-center justify-center rounded-full text-on-surface-muted">
                 <span className="material-symbols-rounded text-4xl">add_a_photo</span>
               </div>
             </div>
             <div>
-              <label className="text-[12px] font-medium uppercase tracking-wide text-on-surface-muted mb-1 block">Your outing vibe (optional)</label>
+              <label className="mb-2 block text-sm font-semibold text-on-surface-muted">Your outing vibe</label>
               <textarea
                 value={bio} onChange={e => setBio(e.target.value)} maxLength={300} rows={3}
                 placeholder="I love discovering films outside the mainstream..."
-                className="w-full bg-surface-low rounded-btn px-3 py-2.5 text-[14px] text-on-surface resize-none focus:outline-none focus:ring-2 focus:ring-primary-mid"
+                className="input-shell min-h-[150px] resize-none"
               />
-              <p className="text-right text-[11px] text-on-surface-disabled mt-0.5">{bio.length} / 300</p>
+              <p className="mt-2 text-right text-xs text-on-surface-disabled">{bio.length} / 300</p>
             </div>
           </div>
         )}
 
         {step === 2 && (
           <div className="space-y-4">
-            <h2 className="text-[22px] font-bold">What are you into?</h2>
-            <p className="text-[13px] text-on-surface-muted">Pick at least 3 categories to start matching</p>
+            <h2 className="text-4xl text-on-surface">What are you into?</h2>
+            <p className="text-sm text-on-surface-muted">Pick at least 3 categories to make the matching less random.</p>
 
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-2 gap-3">
               {CATEGORIES.map(c => (
                 <button
                   key={c.value}
                   onClick={() => toggleCat(c.value)}
-                  className={`p-4 rounded-card text-left transition-all border-2 ${
+                  className={`rounded-[24px] border p-4 text-left transition ${
                     selectedCats.includes(c.value)
-                      ? 'border-primary-mid bg-primary-light'
-                      : 'border-transparent bg-surface-low hover:bg-surface-high'
+                      ? 'border-primary-mid bg-primary-light shadow-[0_12px_28px_rgba(241,180,76,0.18)]'
+                      : 'border-outline-soft bg-[rgba(255,255,255,0.03)] hover:bg-[rgba(255,255,255,0.06)]'
                   }`}
                 >
                   <span className="text-2xl block mb-1">{c.emoji}</span>
-                  <span className="text-[14px] font-medium text-on-surface">{c.label}</span>
+                  <span className="text-sm font-semibold text-on-surface">{c.label}</span>
                 </button>
               ))}
             </div>
 
             <div>
-              <label className="text-[12px] font-medium uppercase tracking-wide text-on-surface-muted mb-1 block">Taste tags</label>
+              <label className="mb-2 block text-sm font-semibold text-on-surface-muted">Taste tags</label>
               <div className="flex gap-2">
                 <input
                   value={tagInput}
                   onChange={e => setTagInput(e.target.value)}
                   onKeyDown={e => e.key === 'Enter' && addTag()}
                   placeholder="sci-fi, jazz, arthouse..."
-                  className="flex-1 bg-surface-low rounded-btn px-3 py-2.5 text-[14px] text-on-surface focus:outline-none focus:ring-2 focus:ring-primary-mid"
+                  className="input-shell flex-1"
                 />
-                <button onClick={addTag} className="px-3 py-2.5 bg-primary-mid text-on-primary rounded-btn text-[13px] font-medium">Add</button>
+                <button onClick={addTag} className="primary-btn whitespace-nowrap px-5">Add</button>
               </div>
-              <div className="flex flex-wrap gap-1.5 mt-2">
+              <div className="mt-3 flex flex-wrap gap-2">
                 {tags.map(t => (
-                  <span key={t} className="flex items-center gap-1 px-2.5 py-0.5 rounded-pill bg-primary-light text-primary text-[12px] font-medium">
+                  <span key={t} className="flex items-center gap-1 rounded-full bg-primary-light px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-primary">
                     {t}
                     <button onClick={() => removeTag(t)}><span className="material-symbols-rounded text-[14px]">close</span></button>
                   </span>
@@ -139,26 +158,28 @@ export default function Onboarding() {
 
         {step === 3 && (
           <div className="space-y-4">
-            <h2 className="text-[22px] font-bold">Where are you based?</h2>
+            <h2 className="text-4xl text-on-surface">Where are you based?</h2>
+            <p className="text-sm text-on-surface-muted">We use your city to surface events that are actually reachable.</p>
             <div>
-              <label className="text-[12px] font-medium uppercase tracking-wide text-on-surface-muted mb-1 block">City</label>
+              <label className="mb-2 block text-sm font-semibold text-on-surface-muted">City</label>
               <input
                 value={city} onChange={e => setCity(e.target.value)}
                 placeholder="Paris"
-                className="w-full bg-surface-low rounded-btn px-3 py-3 text-[14px] text-on-surface focus:outline-none focus:ring-2 focus:ring-primary-mid"
+                className="input-shell"
               />
             </div>
           </div>
         )}
+          </section>
+        </div>
       </div>
 
-      {/* Footer CTA */}
-      <div className="px-6 pb-8 pt-4">
+      <div className="page-wrap px-1 pb-10 pt-2">
         {step < 3 ? (
           <button
             onClick={() => setStep(s => s + 1)}
             disabled={step === 2 && selectedCats.length < 3}
-            className="w-full py-3.5 rounded-btn bg-primary-mid text-on-primary font-semibold text-[15px] disabled:opacity-40 flex items-center justify-center gap-2"
+            className="primary-btn w-full disabled:opacity-40"
           >
             Continue <span className="material-symbols-rounded">arrow_forward</span>
           </button>
@@ -166,7 +187,7 @@ export default function Onboarding() {
           <button
             onClick={finish}
             disabled={saving}
-            className="w-full py-3.5 rounded-btn bg-primary-mid text-on-primary font-semibold text-[15px] disabled:opacity-60"
+            className="primary-btn w-full disabled:opacity-60"
           >
             {saving ? 'Saving...' : 'Get started →'}
           </button>

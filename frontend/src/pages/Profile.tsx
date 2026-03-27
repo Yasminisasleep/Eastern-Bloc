@@ -30,75 +30,90 @@ export default function Profile() {
   const handleLogout = () => { logout(); navigate('/login') }
 
   return (
-    <div className="min-h-screen bg-background pb-20">
-      <header className="px-4 pt-6 pb-4 border-b border-surface-high flex items-center justify-between">
-        <h1 className="text-[20px] font-bold text-on-surface">Me</h1>
-        <button onClick={handleLogout} className="text-[13px] text-on-surface-muted hover:text-on-surface">
+    <div className="app-shell pb-28">
+      <header className="border-b border-outline-soft bg-[rgba(11,16,22,0.58)] backdrop-blur-xl">
+        <div className="page-wrap flex items-center justify-between px-1 py-6">
+          <div>
+            <p className="eyebrow">Profile</p>
+            <h1 className="mt-2 text-4xl text-on-surface">Your cultural card</h1>
+          </div>
+          <button onClick={handleLogout} className="secondary-btn px-5 py-3 text-sm">
           Log out
-        </button>
+          </button>
+        </div>
       </header>
 
-      <main className="px-4 pt-6 space-y-6">
-        {/* Profile card */}
-        <div className="bg-surface-white rounded-card shadow-card p-4">
-          <div className="flex items-center gap-4 mb-4">
+      <main className="page-wrap grid gap-6 px-1 pt-6 lg:grid-cols-[1.2fr_0.8fr]">
+        <div className="glass-card rounded-[30px] p-6">
+          <div className="mb-6 flex items-center gap-4">
             <Avatar user={user} size="lg" />
             <div>
-              <p className="font-bold text-[18px] text-on-surface">{user.displayName}</p>
-              <p className="text-[13px] text-on-surface-muted">{user.email}</p>
-              {user.city && <p className="text-[13px] text-on-surface-muted flex items-center gap-1 mt-0.5">
+              <p className="text-3xl font-semibold text-on-surface">{user.displayName}</p>
+              <p className="mt-1 text-sm text-on-surface-muted">{user.email}</p>
+              {user.city && <p className="mt-1 flex items-center gap-1 text-sm text-on-surface-muted">
                 <span className="material-symbols-rounded text-[14px]">location_on</span>{user.city}
               </p>}
             </div>
           </div>
 
           {editing ? (
-            <div className="space-y-3">
+            <div className="space-y-4">
               <div>
-                <label className="text-[11px] font-medium uppercase tracking-wide text-on-surface-muted mb-1 block">City</label>
-                <input value={city} onChange={e => setCity(e.target.value)}
-                  className="w-full bg-surface-low rounded-btn px-3 py-2 text-[14px] focus:outline-none focus:ring-2 focus:ring-primary-mid" />
+                <label className="mb-2 block text-sm font-semibold text-on-surface-muted">City</label>
+                <input value={city} onChange={e => setCity(e.target.value)} className="input-shell" />
               </div>
               <div>
-                <label className="text-[11px] font-medium uppercase tracking-wide text-on-surface-muted mb-1 block">Outing vibe</label>
-                <textarea value={bio} onChange={e => setBio(e.target.value)} maxLength={300} rows={2}
-                  className="w-full bg-surface-low rounded-btn px-3 py-2 text-[14px] resize-none focus:outline-none focus:ring-2 focus:ring-primary-mid" />
+                <label className="mb-2 block text-sm font-semibold text-on-surface-muted">Outing vibe</label>
+                <textarea value={bio} onChange={e => setBio(e.target.value)} maxLength={300} rows={4} className="input-shell resize-none" />
               </div>
               <div className="flex gap-2">
-                <button onClick={() => setEditing(false)} className="flex-1 py-2 rounded-btn border border-surface-high text-[13px] text-on-surface-muted">Cancel</button>
-                <button onClick={save} disabled={saving} className="flex-1 py-2 rounded-btn bg-primary-mid text-on-primary text-[13px] font-semibold disabled:opacity-60">
+                <button onClick={() => setEditing(false)} className="secondary-btn flex-1">
+                  Cancel
+                </button>
+                <button onClick={save} disabled={saving} className="primary-btn flex-1 disabled:opacity-60">
                   {saving ? 'Saving...' : 'Save'}
                 </button>
               </div>
             </div>
           ) : (
             <>
-              {user.bio && <p className="text-[14px] text-on-surface-muted mb-3">{user.bio}</p>}
-              <button onClick={() => setEditing(true)}
-                className="text-[13px] text-primary-mid font-medium flex items-center gap-1">
-                <span className="material-symbols-rounded text-[16px]">edit</span> Edit profile
+              <p className="max-w-2xl text-base leading-7 text-on-surface-muted">
+                {user.bio || 'Add a short bio so future matches know the kind of outing partner they are meeting.'}
+              </p>
+              <button onClick={() => setEditing(true)} className="mt-5 secondary-btn">
+                <span className="material-symbols-rounded text-[18px]">edit</span> Edit profile
               </button>
             </>
           )}
         </div>
 
-        {/* Taste */}
-        <div>
-          <p className="text-[11px] font-medium uppercase tracking-wide text-on-surface-muted mb-2">My interests</p>
-          <div className="flex flex-wrap gap-1.5 mb-3">
+        <div className="space-y-6">
+          <div className="glass-card rounded-[30px] p-6">
+            <p className="eyebrow">Interests</p>
+            <h2 className="mt-2 text-3xl text-on-surface">What shapes your matches</h2>
+            <div className="mt-5 flex flex-wrap gap-2">
             {user.preferredCategories.map(c => {
               const s = CATEGORY_STYLES[c]
-              return <span key={c} className={`px-2.5 py-0.5 rounded-pill text-[11px] font-medium uppercase tracking-wide ${s.bg} ${s.text}`}>{s.label}</span>
+              return <span key={c} className={`rounded-full px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.2em] ${s.bg} ${s.text}`}>{s.label}</span>
             })}
-          </div>
-          <div className="flex flex-wrap gap-1.5">
+            </div>
+            <div className="mt-4 flex flex-wrap gap-2">
             {user.tasteTags.map(t => (
-              <span key={t} className="px-2.5 py-0.5 rounded-pill bg-primary-light text-primary text-[11px] font-medium uppercase tracking-wide">{t}</span>
+              <span key={t} className="rounded-full bg-primary-light px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.2em] text-primary">{t}</span>
             ))}
+            </div>
+            <button onClick={() => navigate('/onboarding')} className="primary-btn mt-6">
+              <span className="material-symbols-rounded text-[18px]">tune</span> Update taste
+            </button>
           </div>
-          <button onClick={() => navigate('/onboarding')} className="text-[13px] text-primary-mid font-medium mt-3 flex items-center gap-1">
-            <span className="material-symbols-rounded text-[16px]">edit</span> Edit taste
-          </button>
+
+          <div className="hero-card rounded-[30px] p-6">
+            <p className="eyebrow">Status</p>
+            <h2 className="mt-2 text-3xl text-on-surface">Ready for better matches</h2>
+            <p className="mt-3 text-sm leading-6 text-on-surface-muted">
+              The sharper your city, categories, and tags, the less random the suggestions feel.
+            </p>
+          </div>
         </div>
       </main>
 

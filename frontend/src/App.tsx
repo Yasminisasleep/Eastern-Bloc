@@ -10,23 +10,35 @@ import Register from './pages/Register'
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth()
-  if (loading) return <div className="loading">Loading...</div>
+  if (loading) return <LoadingScreen />
   if (!user) return <Navigate to="/login" replace />
   return <>{children}</>
 }
 
 function GuestRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth()
-  if (loading) return <div className="loading">Loading...</div>
+  if (loading) return <LoadingScreen />
   if (user) return <Navigate to="/discover" replace />
   return <>{children}</>
+}
+
+function LoadingScreen() {
+  return (
+    <div className="loading-screen app-shell">
+      <div className="loading-panel hero-card">
+        <p className="eyebrow mb-4">Kulto</p>
+        <h1 className="text-4xl text-on-surface">Curating your next outing</h1>
+        <p className="mt-3 text-sm text-on-surface-muted">Loading your profile, matches, and nearby events.</p>
+      </div>
+    </div>
+  )
 }
 
 export default function App() {
   const { user, loading } = useAuth()
 
   if (loading) {
-    return <div className="loading">Loading...</div>
+    return <LoadingScreen />
   }
 
   return (

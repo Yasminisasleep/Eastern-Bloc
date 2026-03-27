@@ -18,19 +18,22 @@ export default function EventDetailPage() {
       .then(setEvent)
       .catch(() => navigate('/discover'))
       .finally(() => setLoading(false))
-  }, [id])
+  }, [id, navigate])
 
   const toggleInterest = async () => {
-    if (!user) { navigate('/login', { state: { from: `/events/${id}` } }); return }
+    if (!user) {
+      navigate('/login', { state: { from: `/events/${id}` } })
+      return
+    }
     if (!event) return
     setInterestLoading(true)
     try {
       if (event.currentUserInterested) {
         await eventsApi.removeInterest(event.id)
-        setEvent(e => e ? { ...e, currentUserInterested: false, wantToGoCount: e.wantToGoCount - 1 } : e)
+        setEvent(current => current ? { ...current, currentUserInterested: false, wantToGoCount: Math.max(0, current.wantToGoCount - 1) } : current)
       } else {
         await eventsApi.expressInterest(event.id)
-        setEvent(e => e ? { ...e, currentUserInterested: true, wantToGoCount: e.wantToGoCount + 1 } : e)
+        setEvent(current => current ? { ...current, currentUserInterested: true, wantToGoCount: current.wantToGoCount + 1 } : current)
       }
     } finally {
       setInterestLoading(false)
@@ -39,12 +42,14 @@ export default function EventDetailPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background pb-20 animate-pulse">
-        <div className="w-full aspect-video bg-surface-low" />
-        <div className="p-4 space-y-3">
-          <div className="h-4 bg-surface-low rounded w-1/4" />
-          <div className="h-7 bg-surface-low rounded w-3/4" />
-          <div className="h-4 bg-surface-low rounded w-1/2" />
+      <div className="app-shell min-h-screen pb-24">
+        <div className="page-wrap px-1 pt-6 animate-pulse">
+          <div className="glass-card aspect-[16/9] rounded-[34px]" />
+          <div className="mt-6 space-y-3">
+            <div className="h-4 w-1/4 rounded bg-surface-low" />
+            <div className="h-9 w-2/3 rounded bg-surface-low" />
+            <div className="h-4 w-1/2 rounded bg-surface-low" />
+          </div>
         </div>
       </div>
     )
@@ -53,106 +58,131 @@ export default function EventDetailPage() {
   if (!event) return null
 
   const date = new Date(event.date).toLocaleDateString('en-GB', {
-    weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
   })
   const time = new Date(event.date).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })
 
   return (
-    <div className="min-h-screen bg-background pb-24">
-      {/* Top bar */}
-      <header className="sticky top-0 flex items-center justify-between px-4 py-3 bg-surface/80 backdrop-blur-md z-40 border-b border-surface-high">
-        <button onClick={() => navigate(-1)} className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-surface-low">
-          <span className="material-symbols-rounded">arrow_back</span>
-        </button>
-        {event.externalLink && (
-          <a href={event.externalLink} target="_blank" rel="noreferrer"
-            className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-surface-low">
-            <span className="material-symbols-rounded">share</span>
-          </a>
-        )}
-      </header>
-
-      {/* Image */}
-      <div className="w-full aspect-video bg-surface-low overflow-hidden">
-        {event.imageUrl
-          ? <img src={event.imageUrl} alt={event.title} className="w-full h-full object-cover" />
-          : <div className="w-full h-full flex items-center justify-center text-on-surface-disabled">
-              <span className="material-symbols-rounded text-6xl">image</span>
-            </div>
-        }
-      </div>
-
-      <div className="px-4 pt-4 space-y-4">
-        {/* Meta */}
-        <div>
-          <CategoryChip category={event.category} />
-          <h1 className="text-[24px] font-bold text-on-surface mt-2 leading-tight">{event.title}</h1>
-        </div>
-
-        {/* Details */}
-        <div className="space-y-2">
-          <div className="flex items-center gap-2 text-[14px] text-on-surface-muted">
-            <span className="material-symbols-rounded text-[18px]">calendar_today</span>
-            <span>{date} at {time}</span>
-          </div>
-          <div className="flex items-center gap-2 text-[14px] text-on-surface-muted">
-            <span className="material-symbols-rounded text-[18px]">location_on</span>
-            <span>{event.venue}, {event.city}</span>
-          </div>
-          {event.price != null && (
-            <div className="flex items-center gap-2 text-[14px] text-on-surface-muted">
-              <span className="material-symbols-rounded text-[18px]">euro</span>
-              <span>{event.price === 0 ? 'Free' : `€${event.price.toFixed(2)}`}</span>
-            </div>
+    <div className="app-shell min-h-screen pb-28">
+      <header className="sticky top-0 z-40 border-b border-outline-soft bg-[rgba(11,16,22,0.74)] backdrop-blur-xl">
+        <div className="page-wrap flex items-center justify-between px-1 py-4">
+          <button onClick={() => navigate(-1)} className="secondary-btn p-3">
+            <span className="material-symbols-rounded">arrow_back</span>
+          </button>
+          {event.externalLink ? (
+            <a href={event.externalLink} target="_blank" rel="noreferrer" className="secondary-btn p-3">
+              <span className="material-symbols-rounded">open_in_new</span>
+            </a>
+          ) : (
+            <div />
           )}
         </div>
+      </header>
 
-        {/* Divider */}
-        <div className="border-t border-surface-high" />
-
-        {/* Description */}
-        {event.description && (
-          <div>
-            <h2 className="font-semibold text-[16px] mb-1.5">About</h2>
-            <p className="text-[14px] text-on-surface-muted leading-relaxed">{event.description}</p>
+      <main className="page-wrap px-1 pt-6">
+        <div className="glass-card overflow-hidden rounded-[34px]">
+          <div className="relative aspect-[16/9] overflow-hidden bg-surface-low">
+            {event.imageUrl ? (
+              <img src={event.imageUrl} alt={event.title} className="h-full w-full object-cover" />
+            ) : (
+              <div className="flex h-full w-full items-center justify-center text-on-surface-disabled">
+                <span className="material-symbols-rounded text-6xl">image</span>
+              </div>
+            )}
+            <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-[rgba(11,16,22,0.84)] to-transparent" />
           </div>
-        )}
 
-        {/* Tags */}
-        {event.tags?.length > 0 && (
-          <div>
-            <h2 className="font-semibold text-[16px] mb-2">Tags</h2>
-            <div className="flex flex-wrap gap-1.5">
-              {event.tags.map(t => (
-                <span key={t} className="px-2.5 py-0.5 rounded-pill bg-primary-light text-primary text-[11px] font-medium uppercase tracking-wide">
-                  {t}
-                </span>
-              ))}
+          <div className="space-y-6 px-5 py-6 md:px-8">
+            <div className="flex flex-wrap items-start justify-between gap-4">
+              <div className="max-w-3xl">
+                <CategoryChip category={event.category} />
+                <h1 className="mt-3 text-4xl leading-tight text-on-surface md:text-5xl">{event.title}</h1>
+              </div>
+              <div className="glass-card rounded-[22px] px-4 py-3 text-right text-sm text-on-surface-muted">
+                <p className="font-semibold text-on-surface">{event.wantToGoCount} interested</p>
+                <p>{event.currentUserInterested ? 'You are in the pool' : 'Matching open'}</p>
+              </div>
+            </div>
+
+            <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
+              <div className="space-y-6">
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div className="glass-card rounded-[24px] p-4">
+                    <div className="flex items-center gap-2 text-sm text-on-surface-muted">
+                      <span className="material-symbols-rounded text-[18px]">calendar_today</span>
+                      <span>Date</span>
+                    </div>
+                    <p className="mt-2 text-base font-semibold text-on-surface">{date}</p>
+                    <p className="text-sm text-on-surface-muted">{time}</p>
+                  </div>
+
+                  <div className="glass-card rounded-[24px] p-4">
+                    <div className="flex items-center gap-2 text-sm text-on-surface-muted">
+                      <span className="material-symbols-rounded text-[18px]">location_on</span>
+                      <span>Venue</span>
+                    </div>
+                    <p className="mt-2 text-base font-semibold text-on-surface">{event.venue}</p>
+                    <p className="text-sm text-on-surface-muted">{event.city}</p>
+                  </div>
+                </div>
+
+                {event.price != null && (
+                  <div className="glass-card rounded-[24px] p-4">
+                    <div className="flex items-center gap-2 text-sm text-on-surface-muted">
+                      <span className="material-symbols-rounded text-[18px]">euro</span>
+                      <span>Price</span>
+                    </div>
+                    <p className="mt-2 text-base font-semibold text-on-surface">
+                      {event.price === 0 ? 'Free' : `€${event.price.toFixed(2)}`}
+                    </p>
+                  </div>
+                )}
+
+                {event.description && (
+                  <div>
+                    <h2 className="text-3xl text-on-surface">About</h2>
+                    <p className="mt-3 text-base leading-7 text-on-surface-muted">{event.description}</p>
+                  </div>
+                )}
+              </div>
+
+              <div className="space-y-6">
+                {event.tags?.length > 0 && (
+                  <div className="glass-card rounded-[28px] p-5">
+                    <h2 className="text-3xl text-on-surface">Tags</h2>
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      {event.tags.map(tag => (
+                        <span key={tag} className="rounded-full bg-primary-light px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <div className="hero-card rounded-[28px] p-5">
+                  <p className="eyebrow">Why tap interested</p>
+                  <p className="mt-3 text-base leading-7 text-on-surface-muted">
+                    Showing interest adds you to the matching pool for this event. If someone with overlapping taste is also in, Kulto can propose the outing.
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
-        )}
+        </div>
+      </main>
 
-        {/* Social proof */}
-        {event.wantToGoCount > 0 && (
-          <p className="text-[13px] text-on-surface-muted">
-            {event.wantToGoCount} {event.wantToGoCount === 1 ? 'person wants' : 'people want'} to go
-          </p>
-        )}
-      </div>
-
-      {/* CTA — fixed bottom */}
-      <div className="fixed bottom-16 left-0 right-0 px-4 pb-2 bg-gradient-to-t from-background via-background/95 to-transparent pt-4">
+      <div className="fixed bottom-20 left-1/2 z-40 w-[calc(100%-1.5rem)] max-w-3xl -translate-x-1/2 bg-gradient-to-t from-background via-background/95 to-transparent px-2 pt-6">
         <button
           onClick={toggleInterest}
           disabled={interestLoading}
-          className={`w-full flex items-center justify-center gap-2 py-3.5 rounded-btn text-[15px] font-semibold transition-all ${
-            event.currentUserInterested
-              ? 'bg-primary-mid text-on-primary'
-              : 'border-2 border-primary-mid text-primary-mid hover:bg-primary-light'
-          } disabled:opacity-60`}
+          className={`w-full ${event.currentUserInterested ? 'primary-btn' : 'secondary-btn border-primary-mid text-primary-mid'} disabled:opacity-60`}
         >
-          <span className={`material-symbols-rounded ${event.currentUserInterested ? 'filled' : ''}`}>favorite</span>
-          {event.currentUserInterested ? "You want to go — finding a match" : "I want to go"}
+          <span className="material-symbols-rounded">favorite</span>
+          {event.currentUserInterested ? 'You are in the matching pool' : 'I want to go'}
         </button>
       </div>
 

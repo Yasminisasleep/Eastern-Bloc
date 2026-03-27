@@ -33,42 +33,69 @@ export default function Register() {
   }
 
   return (
-    <div className="form-container">
-      <h2>Create account</h2>
+    <div className="auth-shell app-shell">
+      <div className="auth-grid">
+        <section className="hero-card rounded-[32px] p-8 md:p-10">
+          <p className="eyebrow">Join the Scene</p>
+          <h1 className="mt-4 text-5xl leading-tight text-balance text-on-surface md:text-6xl">
+            Build a profile around your taste, not your selfies.
+          </h1>
+          <p className="mt-5 max-w-xl text-base leading-7 text-on-surface-muted">
+            Set your vibe, pick the cultural worlds you care about, and start getting matched around events that already exist.
+          </p>
+          <div className="mt-8 space-y-3 text-sm text-on-surface-muted">
+            <div className="glass-card rounded-[22px] px-4 py-3">Tell people what kind of outing energy you bring.</div>
+            <div className="glass-card rounded-[22px] px-4 py-3">Choose categories and tags that shape better matches.</div>
+            <div className="glass-card rounded-[22px] px-4 py-3">Discover events nearby and express interest with one tap.</div>
+          </div>
+        </section>
 
-      <form onSubmit={submit}>
-        <div className="form-group">
-          <label>First name</label>
-          <input type="text" value={firstName} onChange={e => setFirstName(e.target.value)} required placeholder="Camille" />
-        </div>
+        <section className="glass-card rounded-[32px] p-7 md:p-8">
+          <p className="eyebrow">Create Account</p>
+          <h2 className="mt-3 text-4xl text-on-surface">Start your profile</h2>
+          <p className="mt-2 text-sm text-on-surface-muted">You can refine your taste and city in onboarding right after this.</p>
 
-        <div className="form-group">
-          <label>Last name</label>
-          <input type="text" value={lastName} onChange={e => setLastName(e.target.value)} placeholder="Optional" />
-        </div>
+          <form onSubmit={submit} className="mt-8 space-y-5">
+            <div className="grid gap-5 sm:grid-cols-2">
+              <div>
+                <label className="mb-2 block text-sm font-semibold text-on-surface-muted">First name</label>
+                <input className="input-shell" type="text" value={firstName} onChange={e => setFirstName(e.target.value)} required placeholder="Camille" />
+              </div>
 
-        <div className="form-group">
-          <label>Email</label>
-          <input type="email" value={email} onChange={e => setEmail(e.target.value)} required placeholder="you@example.com" />
-        </div>
+              <div>
+                <label className="mb-2 block text-sm font-semibold text-on-surface-muted">Last name</label>
+                <input className="input-shell" type="text" value={lastName} onChange={e => setLastName(e.target.value)} placeholder="Optional" />
+              </div>
+            </div>
 
-        <div className="form-group">
-          <label>Password</label>
-          <input type="password" value={password} onChange={e => setPassword(e.target.value)} required placeholder="Min. 8 characters" />
-        </div>
+            <div>
+              <label className="mb-2 block text-sm font-semibold text-on-surface-muted">Email</label>
+              <input className="input-shell" type="email" value={email} onChange={e => setEmail(e.target.value)} required placeholder="you@example.com" />
+            </div>
 
-        {error && <p className="error-message">{error}</p>}
+            <div>
+              <label className="mb-2 block text-sm font-semibold text-on-surface-muted">Password</label>
+              <input className="input-shell" type="password" value={password} onChange={e => setPassword(e.target.value)} required placeholder="Minimum 8 characters" />
+            </div>
 
-        <div className="form-actions">
-          <button type="submit" disabled={loading}>
-            {loading ? 'Creating account...' : 'Get started'}
-          </button>
-        </div>
-      </form>
+            {error && (
+              <p className="rounded-2xl border border-[rgba(184,93,85,0.35)] bg-[rgba(184,93,85,0.12)] px-4 py-3 text-sm text-[#ffd3cf]">
+                {error}
+              </p>
+            )}
 
-      <div className="toggle-form">
-        <span>Already have an account? </span>
-        <Link to="/login">Log in</Link>
+            <button className="primary-btn w-full" type="submit" disabled={loading}>
+              {loading ? 'Creating account...' : 'Create my account'}
+            </button>
+          </form>
+
+          <div className="mt-6 text-sm text-on-surface-muted">
+            Already have an account?{' '}
+            <Link className="font-semibold text-primary-mid transition hover:text-white" to="/login">
+              Log in
+            </Link>
+          </div>
+        </section>
       </div>
     </div>
   )

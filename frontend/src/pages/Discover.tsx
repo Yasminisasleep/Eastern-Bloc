@@ -32,83 +32,97 @@ export default function Discover() {
   }, [category, city, q, page])
 
   return (
-    <div className="min-h-screen bg-background pb-20">
-      {/* Header */}
-      <header className="sticky top-0 bg-surface/80 backdrop-blur-md z-40 px-4 pt-4 pb-3 border-b border-surface-high">
-        <div className="flex items-center justify-between mb-3">
-          <h1 className="text-[20px] font-bold text-on-surface">
-            What's on{city ? ` in ${city}` : ''}
-          </h1>
-          <div className="flex items-center gap-2">
-            <input
-              value={city}
-              onChange={e => { setCity(e.target.value); setPage(0) }}
-              placeholder="City"
-              className="text-[13px] border border-outline/30 rounded-btn px-2 py-1 bg-surface-white w-24 text-on-surface focus:outline-none focus:border-primary-mid"
-            />
-          </div>
-        </div>
+    <div className="app-shell pb-28">
+      <header className="sticky top-0 z-40 border-b border-outline-soft bg-[rgba(11,16,22,0.74)] backdrop-blur-xl">
+        <div className="page-wrap px-1 py-5">
+          <div className="hero-card rounded-[30px] px-5 py-5 md:px-7">
+            <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
+              <div className="max-w-2xl">
+                <p className="eyebrow">Discover</p>
+                <h1 className="mt-3 text-4xl leading-tight text-on-surface md:text-5xl">
+                  What is on{city ? ` in ${city}` : ' near you'}
+                </h1>
+                <p className="mt-3 max-w-xl text-sm leading-6 text-on-surface-muted md:text-base">
+                  Browse cultural events, narrow by category, and mark the ones you would actually leave the house for.
+                </p>
+              </div>
 
-        {/* Search */}
-        <div className="relative mb-3">
-          <span className="material-symbols-rounded absolute left-3 top-1/2 -translate-y-1/2 text-[20px] text-on-surface-muted">search</span>
-          <input
-            value={q}
-            onChange={e => { setQ(e.target.value); setPage(0) }}
-            placeholder="Search events..."
-            className="w-full bg-surface-low rounded-btn pl-9 pr-3 py-2.5 text-[14px] text-on-surface focus:outline-none focus:ring-1 focus:ring-primary-mid"
-          />
-        </div>
+              <div className="glass-card rounded-[22px] px-4 py-3 text-sm text-on-surface-muted">
+                <p className="font-semibold text-on-surface">{user?.displayName ?? 'Guest mode'}</p>
+                <p>{city || 'Add a city to sharpen results'}</p>
+              </div>
+            </div>
 
-        {/* Category tabs */}
-        <div className="flex gap-2 overflow-x-auto no-scrollbar">
+            <div className="mt-5 grid gap-3 md:grid-cols-[1fr_180px]">
+              <div className="relative">
+                <span className="material-symbols-rounded absolute left-4 top-1/2 -translate-y-1/2 text-[20px] text-on-surface-muted">search</span>
+                <input
+                  value={q}
+                  onChange={e => { setQ(e.target.value); setPage(0) }}
+                  placeholder="Search events, venues, or vibes..."
+                  className="input-shell pl-12"
+                />
+              </div>
+              <input
+                value={city}
+                onChange={e => { setCity(e.target.value); setPage(0) }}
+                placeholder="Your city"
+                className="input-shell"
+              />
+            </div>
+
+            <div className="mt-4 flex gap-2 overflow-x-auto no-scrollbar">
           {CATEGORIES.map(c => (
             <button
               key={c.value}
               onClick={() => { setCategory(c.value); setPage(0) }}
-              className={`flex-shrink-0 px-3 py-1.5 rounded-pill text-[13px] font-medium transition-colors ${
+              className={`flex-shrink-0 rounded-full px-4 py-2 text-[13px] font-semibold transition ${
                 category === c.value
-                  ? 'bg-primary-mid text-on-primary'
-                  : 'bg-surface-low text-on-surface-muted hover:bg-surface-high'
+                  ? 'bg-primary-mid text-on-primary shadow-[0_10px_24px_rgba(241,180,76,0.24)]'
+                  : 'bg-[rgba(255,255,255,0.04)] text-on-surface-muted hover:bg-[rgba(255,255,255,0.08)]'
               }`}
             >
               {c.label}
             </button>
           ))}
+            </div>
+          </div>
         </div>
       </header>
 
-      {/* Grid */}
-      <main className="px-4 pt-4">
+      <main className="page-wrap px-1 pt-6">
         {loading ? (
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="bg-surface-low rounded-card animate-pulse aspect-[3/4]" />
+              <div key={i} className="glass-card aspect-[4/5] rounded-card animate-pulse" />
             ))}
           </div>
         ) : events.length === 0 ? (
-          <div className="flex flex-col items-center py-16 gap-3 text-on-surface-muted">
-            <span className="material-symbols-rounded text-5xl">event_busy</span>
-            <p className="text-[15px]">No events match your filters</p>
-            <button onClick={() => { setCategory(''); setQ(''); setPage(0) }}
-              className="text-primary-mid text-[14px] font-medium">
+          <div className="hero-card flex flex-col items-center gap-4 rounded-[30px] px-6 py-16 text-center text-on-surface-muted">
+            <span className="material-symbols-rounded text-6xl text-primary-mid">event_busy</span>
+            <div>
+              <p className="text-2xl text-on-surface">No events match your filters</p>
+              <p className="mt-2 text-sm">Try a broader city search or remove a category.</p>
+            </div>
+            <button onClick={() => { setCategory(''); setQ(''); setPage(0) }} className="secondary-btn">
               Clear filters
             </button>
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="mb-4 flex items-center justify-between gap-3">
+              <p className="text-sm text-on-surface-muted">{events.length} events on this page</p>
+              <p className="text-sm text-on-surface-disabled">Page {page + 1} of {totalPages}</p>
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {events.map(e => <EventCard key={e.id} event={e} />)}
             </div>
             {totalPages > 1 && (
-              <div className="flex justify-center gap-2 mt-6">
-                <button disabled={page === 0} onClick={() => setPage(p => p - 1)}
-                  className="px-4 py-2 rounded-btn bg-surface-low text-[13px] text-on-surface disabled:opacity-40">
+              <div className="mt-8 flex justify-center gap-3">
+                <button disabled={page === 0} onClick={() => setPage(p => p - 1)} className="secondary-btn disabled:opacity-40">
                   ← Prev
                 </button>
-                <span className="px-4 py-2 text-[13px] text-on-surface-muted">{page + 1} / {totalPages}</span>
-                <button disabled={page >= totalPages - 1} onClick={() => setPage(p => p + 1)}
-                  className="px-4 py-2 rounded-btn bg-surface-low text-[13px] text-on-surface disabled:opacity-40">
+                <button disabled={page >= totalPages - 1} onClick={() => setPage(p => p + 1)} className="primary-btn disabled:opacity-40">
                   Next →
                 </button>
               </div>

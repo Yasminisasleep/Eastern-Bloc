@@ -4,27 +4,20 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Dark theme surfaces
-        background:  '#0f1419',
-        surface:     '#1a0f2e',
-        'surface-low':    '#1a0f2e',
-        'surface-high':   '#2a1f3e',
-        'surface-white':  'rgba(26, 15, 46, 0.8)',
-
-        // Primary — Gold
-        primary:          '#c9a227',
-        'primary-mid':    '#d4af37',
-        'primary-light':  'rgba(212, 175, 55, 0.15)',
-        'on-primary':     '#0f1419',
-
-        // Text
-        'on-surface':         '#e8e6e1',
-        'on-surface-muted':   '#b8956a',
-        'on-surface-disabled':'#5a5a5a',
-
-        // Outline
-        outline:         '#d4af37',
-        'outline-soft':  'rgba(212, 175, 55, 0.2)',
+        background: '#0d1117',
+        surface: '#15202d',
+        'surface-low': '#162230',
+        'surface-high': '#253445',
+        'surface-white': 'rgba(17, 26, 37, 0.82)',
+        primary: '#f1b44c',
+        'primary-mid': '#f4ce89',
+        'primary-light': 'rgba(244, 206, 137, 0.16)',
+        'on-primary': '#1a1308',
+        'on-surface': '#f7f1e3',
+        'on-surface-muted': '#cdbfa8',
+        'on-surface-disabled': '#8f8473',
+        outline: '#f4ce89',
+        'outline-soft': 'rgba(244, 206, 137, 0.16)',
 
         // Semantic
         success: '#38a169',
@@ -38,18 +31,18 @@ export default {
         festival:   { bg: 'rgba(236, 72, 153, 0.15)', text: '#f472b6' },
       },
       fontFamily: {
-        sans: ['Georgia', 'serif'],
-        serif: ['Georgia', 'serif'],
+        sans: ['Manrope', 'sans-serif'],
+        serif: ['Playfair Display', 'serif'],
       },
       borderRadius: {
-        card:   '8px',
-        btn:    '5px',
+        card:   '24px',
+        btn:    '999px',
         pill:   '9999px',
-        modal:  '10px',
+        modal:  '28px',
       },
       boxShadow: {
-        card:  '0 5px 15px rgba(0,0,0,0.4)',
-        float: '0 10px 30px rgba(0,0,0,0.5)',
+        card:  '0 14px 40px rgba(0,0,0,0.28)',
+        float: '0 24px 80px rgba(0,0,0,0.45)',
       },
     },
   },
