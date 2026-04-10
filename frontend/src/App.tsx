@@ -57,8 +57,8 @@ function App() {
     }
 
     if (activeView === 'match-detail') {
-      if (!selectedMatchId) {
-        return <div className="empty-state">No match selected yet.</div>
+    if (!selectedMatchId) {
+        return <div className="empty-state" data-cy="match-empty-state">No match selected yet.</div>
       }
       return (
         <MatchDetail
@@ -87,36 +87,36 @@ function App() {
   }
 
   return (
-    <div>
+    <div data-cy="authenticated-app">
       <header>
         <div className="header-container">
           <h1>Kulto</h1>
           <nav>
             {user && (
               <div className="nav-user">
-                <div className="app-tabs">
-                  <button type="button" className={activeView === 'events' ? 'tab-btn tab-active' : 'tab-btn'} onClick={() => setActiveView('events')}>
+                <div className="app-tabs" data-cy="app-tabs">
+                  <button type="button" data-cy="tab-events" className={activeView === 'events' ? 'tab-btn tab-active' : 'tab-btn'} onClick={() => setActiveView('events')}>
                     Events
                   </button>
-                  <button type="button" className={activeView === 'preferences' ? 'tab-btn tab-active' : 'tab-btn'} onClick={() => setActiveView('preferences')}>
+                  <button type="button" data-cy="tab-preferences" className={activeView === 'preferences' ? 'tab-btn tab-active' : 'tab-btn'} onClick={() => setActiveView('preferences')}>
                     Preferences
                   </button>
-                  <button type="button" className={activeView === 'notifications' || activeView === 'match-detail' ? 'tab-btn tab-active' : 'tab-btn'} onClick={() => setActiveView('notifications')}>
+                  <button type="button" data-cy="tab-notifications" className={activeView === 'notifications' || activeView === 'match-detail' ? 'tab-btn tab-active' : 'tab-btn'} onClick={() => setActiveView('notifications')}>
                     Notifications
                   </button>
                 </div>
                 <div className="user-info">
-                  <div className="user-name">{user.firstName} {user.lastName}</div>
+                  <div className="user-name" data-cy="user-name">{user.firstName} {user.lastName}</div>
                   <div className="user-email">{user.email}</div>
                 </div>
-                <button className="logout" onClick={handleLogout}>Logout</button>
+                <button className="logout" data-cy="logout-button" onClick={handleLogout}>Logout</button>
               </div>
             )}
           </nav>
         </div>
       </header>
 
-      <div className="main-container">
+      <div className="main-container" data-cy="main-container">
         {renderContent()}
       </div>
     </div>

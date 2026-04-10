@@ -102,11 +102,11 @@ export default function Preferences({ userId, userStorageKey }: Props) {
   }
 
   if (loading) {
-    return <div className="loading">Loading your preferences...</div>
+    return <div className="loading" data-cy="preferences-loading">Loading your preferences...</div>
   }
 
   return (
-    <div className="panel-card">
+    <div className="panel-card" data-cy="preferences-view">
       <h2 className="panel-title">Cultural Preferences</h2>
       <p className="panel-subtitle">Choose what you like so matching can suggest relevant people and events.</p>
 
@@ -120,6 +120,7 @@ export default function Preferences({ userId, userStorageKey }: Props) {
                 <button
                   key={category}
                   type="button"
+                  data-cy={`preferences-category-${category.toLowerCase()}`}
                   className={`chip ${active ? 'chip-active' : ''}`}
                   onClick={() => toggleCategory(category)}
                 >
@@ -135,6 +136,7 @@ export default function Preferences({ userId, userStorageKey }: Props) {
           <input
             id="interestTags"
             type="text"
+            data-cy="preferences-tags"
             value={tagsInput}
             onChange={e => setTagsInput(e.target.value)}
             placeholder="indie, drama, museum, jazz"
@@ -147,6 +149,7 @@ export default function Preferences({ userId, userStorageKey }: Props) {
           <input
             id="radius"
             type="range"
+            data-cy="preferences-radius"
             min={1}
             max={100}
             value={radius}
@@ -154,11 +157,11 @@ export default function Preferences({ userId, userStorageKey }: Props) {
           />
         </div>
 
-        {error && <div className="error-message">{error}</div>}
-        {successMessage && <div className="success-message">{successMessage}</div>}
+        {error && <div className="error-message" data-cy="preferences-error">{error}</div>}
+        {successMessage && <div className="success-message" data-cy="preferences-success">{successMessage}</div>}
 
         <div className="form-actions">
-          <button type="submit" disabled={saving}>
+          <button type="submit" data-cy="preferences-save" disabled={saving}>
             {saving ? 'Saving...' : 'Save Preferences'}
           </button>
         </div>

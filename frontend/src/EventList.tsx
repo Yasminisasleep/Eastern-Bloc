@@ -38,17 +38,18 @@ export default function EventList({ onSelect }: Props) {
   }
 
   return (
-    <div className="events-header">
+    <div className="events-header" data-cy="events-view">
       <h2>Upcoming Events</h2>
       
       <div className="filters">
         <input
+          data-cy="events-search"
           type="text"
           placeholder="Search events..."
           value={search}
           onChange={e => setSearch(e.target.value)}
         />
-        <select value={category} onChange={e => setCategory(e.target.value)}>
+        <select data-cy="events-category-filter" value={category} onChange={e => setCategory(e.target.value)}>
           <option value="">All categories</option>
           {CATEGORIES.map(c => (
             <option key={c} value={c}>{c.charAt(0) + c.slice(1).toLowerCase()}</option>
@@ -56,17 +57,18 @@ export default function EventList({ onSelect }: Props) {
         </select>
       </div>
 
-      {loading && <div className="loading">🎭 Loading events...</div>}
+      {loading && <div className="loading" data-cy="events-loading">🎭 Loading events...</div>}
 
       {!loading && events.length === 0 && (
-        <div className="empty-state">No events found. Check back soon!</div>
+        <div className="empty-state" data-cy="events-empty-state">No events found. Check back soon!</div>
       )}
 
-      <div className="events-grid">
+      <div className="events-grid" data-cy="events-grid">
         {events.map(event => (
           <div
             key={event.id}
             className="event-card"
+            data-cy="event-card"
             onClick={() => onSelect(event.id)}
           >
             <div className="event-image">

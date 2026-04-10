@@ -99,23 +99,24 @@ export default function Notifications({ userId, userStorageKey, onOpenMatch }: P
     })
   }
 
-  if (loading) return <div className="loading">Loading notifications...</div>
+  if (loading) return <div className="loading" data-cy="notifications-loading">Loading notifications...</div>
 
   return (
-    <div className="panel-card">
+    <div className="panel-card" data-cy="notifications-view">
       <div className="panel-title-row">
         <h2 className="panel-title">Match Notifications</h2>
-        <span className="badge-count">{unreadCount} unread</span>
+        <span className="badge-count" data-cy="notifications-unread-count">{unreadCount} unread</span>
       </div>
 
       {notifications.length === 0 && (
-        <div className="empty-state">No notifications yet. Save your preferences to get suggestions.</div>
+        <div className="empty-state" data-cy="notifications-empty-state">No notifications yet. Save your preferences to get suggestions.</div>
       )}
 
-      <div className="notifications-list">
+      <div className="notifications-list" data-cy="notifications-list">
         {notifications.map(notification => (
           <article
             key={notification.id}
+            data-cy="notification-card"
             className={`notification-card ${notification.status === 'UNREAD' ? 'notification-unread' : ''}`}
           >
             <div className="notification-content">
@@ -131,6 +132,7 @@ export default function Notifications({ userId, userStorageKey, onOpenMatch }: P
             <div className="notification-actions">
               <button
                 type="button"
+                data-cy={`open-match-${notification.match.id}`}
                 onClick={() => {
                   markAsRead(notification.id)
                   onOpenMatch(notification.match.id)

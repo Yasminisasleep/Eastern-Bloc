@@ -104,14 +104,14 @@ export default function MatchDetail({ matchId, userStorageKey, onBack }: Props) 
     }
   }
 
-  if (loading) return <div className="loading">Loading match details...</div>
-  if (!match) return <div className="empty-state">Match not found.</div>
+  if (loading) return <div className="loading" data-cy="match-detail-loading">Loading match details...</div>
+  if (!match) return <div className="empty-state" data-cy="match-detail-not-found">Match not found.</div>
 
   return (
-    <div className="panel-card">
+    <div className="panel-card" data-cy="match-detail-view">
       <div className="match-detail-header">
         <h2 className="panel-title">Match Detail</h2>
-        <button type="button" className="back-button" onClick={onBack}>Back</button>
+        <button type="button" className="back-button" data-cy="match-detail-back" onClick={onBack}>Back</button>
       </div>
 
       <div className="match-status-row">
@@ -139,11 +139,12 @@ export default function MatchDetail({ matchId, userStorageKey, onBack }: Props) 
         <p>{new Date(match.event.date).toLocaleString()} • {match.event.venue}</p>
       </section>
 
-      {error && <div className="error-message">{error}</div>}
+      {error && <div className="error-message" data-cy="match-detail-error">{error}</div>}
 
       <div className="form-actions">
         <button
           type="button"
+          data-cy="match-accept"
           onClick={onAccept}
           disabled={updating || match.status === 'ACCEPTED' || match.status === 'CONFIRMED'}
         >
@@ -152,6 +153,7 @@ export default function MatchDetail({ matchId, userStorageKey, onBack }: Props) 
         <button
           type="button"
           className="danger-outline"
+          data-cy="match-reject"
           onClick={onReject}
           disabled={updating || match.status === 'REJECTED' || match.status === 'CANCELLED'}
         >

@@ -41,7 +41,7 @@ export default function Landing({ onLogin, onSignup }: Props) {
   }
 
   const EventCard = ({ event }: { event: Event }) => (
-    <div className="landing-event-card">
+    <div className="landing-event-card" data-cy="landing-event-card">
       <div className="landing-event-image">
         {getIcon(event.category)}
       </div>
@@ -56,13 +56,13 @@ export default function Landing({ onLogin, onSignup }: Props) {
   )
 
   return (
-    <div className="landing-page">
+    <div className="landing-page" data-cy="landing-page">
       <header className="landing-header">
         <div className="landing-header-container">
           <h1>🎭 Kulto</h1>
           <div className="landing-auth-buttons">
-            <button className="auth-btn login-btn" onClick={onLogin}>Login</button>
-            <button className="auth-btn signup-btn" onClick={onSignup}>Sign Up</button>
+            <button className="auth-btn login-btn" data-cy="open-login" onClick={onLogin}>Login</button>
+            <button className="auth-btn signup-btn" data-cy="open-signup" onClick={onSignup}>Sign Up</button>
           </div>
         </div>
         <div className="landing-hero">
@@ -73,7 +73,7 @@ export default function Landing({ onLogin, onSignup }: Props) {
 
       <div className="landing-container">
         {loading ? (
-          <div className="loading">🎭 Loading events...</div>
+          <div className="loading" data-cy="landing-loading">🎭 Loading events...</div>
         ) : (
           <>
             {/* Theater Section */}
@@ -122,7 +122,7 @@ export default function Landing({ onLogin, onSignup }: Props) {
             )}
 
             {theaterEvents.length === 0 && cinemaEvents.length === 0 && museumEvents.length === 0 && (
-              <div className="empty-state">
+              <div className="empty-state" data-cy="landing-empty-state">
                 <p>No events available yet. Sign up to be notified when new events are added!</p>
               </div>
             )}
@@ -132,7 +132,7 @@ export default function Landing({ onLogin, onSignup }: Props) {
 
       <footer className="landing-footer">
         <p>Join Kulto to personalize your cultural experience</p>
-        <button className="footer-signup-btn" onClick={onSignup}>Get Started</button>
+        <button className="footer-signup-btn" data-cy="footer-signup" onClick={onSignup}>Get Started</button>
       </footer>
     </div>
   )

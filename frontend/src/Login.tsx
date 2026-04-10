@@ -29,12 +29,13 @@ export default function Login({ onToggleForm }: Props) {
   }
 
   return (
-    <div className="form-container">
+    <div className="form-container" data-cy="login-form">
       <h2>Login</h2>
       <form onSubmit={handleSubmit}>
         <div className="form-group">
           <label>Email</label>
           <input
+            data-cy="login-email"
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
@@ -46,6 +47,7 @@ export default function Login({ onToggleForm }: Props) {
         <div className="form-group">
           <label>Password</label>
           <input
+            data-cy="login-password"
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
@@ -54,17 +56,17 @@ export default function Login({ onToggleForm }: Props) {
           />
         </div>
 
-        {error && <div className="error-message">{error}</div>}
+        {error && <div className="error-message" data-cy="login-error">{error}</div>}
 
         <div className="form-actions">
-          <button type="submit" disabled={loading}>
+          <button type="submit" data-cy="login-submit" disabled={loading}>
             {loading ? 'Logging in...' : 'Login'}
           </button>
         </div>
       </form>
 
       <div className="toggle-form">
-        Don't have an account? <a onClick={onToggleForm}>Sign up</a>
+        Don't have an account? <a data-cy="switch-to-signup" onClick={onToggleForm}>Sign up</a>
       </div>
     </div>
   )
