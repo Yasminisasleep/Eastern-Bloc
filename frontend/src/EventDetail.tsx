@@ -25,23 +25,23 @@ export default function EventDetail({ eventId, onBack }: Props) {
       .catch(() => setError(true))
   }, [eventId])
 
-  if (error) return <div className="empty-state">Event not found.</div>
-  if (!event) return <div className="loading">🎭 Loading event...</div>
+  if (error) return <div className="empty-state" data-cy="event-detail-error">Event not found.</div>
+  if (!event) return <div className="loading" data-cy="event-detail-loading">🎭 Loading event...</div>
 
   const getIcon = (cat: string): string => {
     return ICONS[cat as keyof typeof ICONS] || ICONS.DEFAULT
   }
 
   return (
-    <div className="event-detail">
+    <div className="event-detail" data-cy="event-detail-view">
       <div className="event-detail-header">
         <div>
-          <h2 className="event-detail-title">{event.title}</h2>
+          <h2 className="event-detail-title" data-cy="event-detail-title">{event.title}</h2>
           <div className="event-category">
             {event.category.charAt(0) + event.category.slice(1).toLowerCase()}
           </div>
         </div>
-        <button className="back-button" onClick={onBack}>← Back</button>
+        <button className="back-button" data-cy="event-detail-back" onClick={onBack}>← Back</button>
       </div>
 
       <div className="event-detail-content">
@@ -71,7 +71,7 @@ export default function EventDetail({ eventId, onBack }: Props) {
           </div>
 
           {event.externalLink && (
-            <button onClick={() => window.open(event.externalLink || '', '_blank')}>
+            <button data-cy="event-detail-ticket-link" onClick={() => window.open(event.externalLink || '', '_blank')}>
               Get Tickets
             </button>
           )}
