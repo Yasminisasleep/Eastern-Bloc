@@ -63,6 +63,33 @@ docker-compose up -d
 # PostgreSQL: localhost:5432
 ```
 
+## Testing
+
+### Frontend E2E (Cypress)
+
+The frontend uses [Cypress](https://www.cypress.io/) for end-to-end tests. Tests are located in `frontend/cypress/e2e/`.
+
+All API calls are intercepted with `cy.intercept`, so no backend is needed to run the suite.
+
+**Prerequisite:** the Vite dev server must be running on `http://127.0.0.1:3000`.
+
+```bash
+cd frontend
+npm run dev          # start dev server (keep this running)
+```
+
+Then in a second terminal:
+
+```bash
+cd frontend
+npm run cy:run       # headless (CI-friendly)
+npm run cy:open      # interactive Cypress UI
+```
+
+`npm run test:e2e` is an alias for `cy:run`.
+
+---
+
 ## CI/CD
 
 The GitHub Actions pipeline runs on every push/PR to `develop` and `main`:
