@@ -28,14 +28,12 @@ export interface AuthResponse {
   token: string
   type: string
   email: string
-  firstName: string
-  lastName: string
+  displayName: string
 }
 
 export interface SignupPayload {
   email: string
-  firstName: string
-  lastName: string
+  displayName: string
   password: string
   dateOfBirth?: string
   city?: string
@@ -105,17 +103,10 @@ function getHeaders(includeAuth = false): HeadersInit {
 export async function signup(payload: SignupPayload): Promise<AuthResponse> {
   const fullPayload = {
     email: payload.email,
-    firstName: payload.firstName,
-    lastName: payload.lastName,
+    displayName: payload.displayName,
     password: payload.password,
     dateOfBirth: payload.dateOfBirth,
     city: payload.city,
-  }
-  const legacyPayload = {
-    email: payload.email,
-    firstName: payload.firstName,
-    lastName: payload.lastName,
-    password: payload.password,
   }
 
   try {
@@ -124,14 +115,6 @@ export async function signup(payload: SignupPayload): Promise<AuthResponse> {
       headers: getHeaders(),
       body: JSON.stringify(fullPayload),
     })
-
-    if (!res.ok && res.status === 400) {
-      res = await fetch(`${API_URL}/auth/signup`, {
-        method: 'POST',
-        headers: getHeaders(),
-        body: JSON.stringify(legacyPayload),
-      })
-    }
 
     if (!res.ok) {
       try {

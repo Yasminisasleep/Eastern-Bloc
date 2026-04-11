@@ -7,6 +7,22 @@ interface Props {
   onBack: () => void
 }
 
+const STATUS_LABELS: Record<string, string> = {
+  PENDING: 'Pending',
+  ACCEPTED: 'Accepted',
+  REJECTED: 'Rejected',
+  CONFIRMED: 'Confirmed',
+  CANCELLED: 'Cancelled',
+}
+
+const CATEGORY_LABELS: Record<string, string> = {
+  CINEMA: 'Cinema',
+  CONCERT: 'Concert',
+  EXHIBITION: 'Exhibition',
+  THEATRE: 'Theatre',
+  FESTIVAL: 'Festival',
+}
+
 function getStorageKey(userStorageKey: string, matchId: number): string {
   return `kulto.match.${userStorageKey}.${matchId}`
 }
@@ -104,7 +120,12 @@ export default function MatchDetail({ matchId, userStorageKey, onBack }: Props) 
     }
   }
 
-  if (loading) return <div className="loading" data-cy="match-detail-loading">Loading match details...</div>
+  if (loading) return (
+    <div className="loading" data-cy="match-detail-loading">
+      <div className="spinner" />
+      Loading match details...
+    </div>
+  )
   if (!match) return <div className="empty-state" data-cy="match-detail-not-found">Match not found.</div>
 
   return (
@@ -115,7 +136,7 @@ export default function MatchDetail({ matchId, userStorageKey, onBack }: Props) 
       </div>
 
       <div className="match-status-row">
-        <span className={`status-pill status-${match.status.toLowerCase()}`}>{match.status}</span>
+        <span className={`status-pill status-${match.status.toLowerCase()}`}>{STATUS_LABELS[match.status] ?? match.status}</span>
         <span className="score-pill">Score {Math.round(match.compatibilityScore * 100)}%</span>
       </div>
 
@@ -135,7 +156,7 @@ export default function MatchDetail({ matchId, userStorageKey, onBack }: Props) 
       <section className="match-section">
         <h3>Compatible event</h3>
         <p><strong>{match.event.title}</strong></p>
-        <p>{match.event.category} • {match.event.city}</p>
+        <p>{CATEGORY_LABELS[match.event.category] ?? match.event.category} • {match.event.city}</p>
         <p>{new Date(match.event.date).toLocaleString()} • {match.event.venue}</p>
       </section>
 

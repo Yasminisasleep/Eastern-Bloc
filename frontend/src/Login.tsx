@@ -20,7 +20,7 @@ export default function Login({ onToggleForm }: Props) {
 
     try {
       const response = await login(email, password)
-      authLogin(response.token, response.email, response.firstName, response.lastName)
+      authLogin(response.token, response.email, response.displayName)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Login failed')
     } finally {
@@ -29,6 +29,7 @@ export default function Login({ onToggleForm }: Props) {
   }
 
   return (
+    <div className="form-page">
     <div className="form-container" data-cy="login-form">
       <h2>Login</h2>
       <form onSubmit={handleSubmit}>
@@ -68,6 +69,7 @@ export default function Login({ onToggleForm }: Props) {
       <div className="toggle-form">
         Don't have an account? <a data-cy="switch-to-signup" onClick={onToggleForm}>Sign up</a>
       </div>
+    </div>
     </div>
   )
 }

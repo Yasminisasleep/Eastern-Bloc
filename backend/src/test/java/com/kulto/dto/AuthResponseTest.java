@@ -10,15 +10,13 @@ class AuthResponseTest {
     void constructor_setsAllFields() {
         String token = "test-token";
         String email = "test@example.com";
-        String firstName = "John";
-        String lastName = "Doe";
+        String displayName = "John Doe";
 
-        AuthResponse response = new AuthResponse(token, email, firstName, lastName);
+        AuthResponse response = new AuthResponse(token, email, displayName);
 
         assertEquals(token, response.getToken());
         assertEquals(email, response.getEmail());
-        assertEquals(firstName, response.getFirstName());
-        assertEquals(lastName, response.getLastName());
+        assertEquals(displayName, response.getDisplayName());
         assertEquals("Bearer", response.getType());
     }
 
@@ -28,8 +26,7 @@ class AuthResponseTest {
 
         assertNull(response.getToken());
         assertNull(response.getEmail());
-        assertNull(response.getFirstName());
-        assertNull(response.getLastName());
+        assertNull(response.getDisplayName());
         assertEquals("Bearer", response.getType());
     }
 
@@ -39,14 +36,12 @@ class AuthResponseTest {
 
         response.setToken("new-token");
         response.setEmail("new@example.com");
-        response.setFirstName("Jane");
-        response.setLastName("Smith");
+        response.setDisplayName("Jane Smith");
         response.setType("CustomType");
 
         assertEquals("new-token", response.getToken());
         assertEquals("new@example.com", response.getEmail());
-        assertEquals("Jane", response.getFirstName());
-        assertEquals("Smith", response.getLastName());
+        assertEquals("Jane Smith", response.getDisplayName());
         assertEquals("CustomType", response.getType());
     }
 }

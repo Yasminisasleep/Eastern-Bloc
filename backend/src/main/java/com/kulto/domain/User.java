@@ -26,25 +26,23 @@ public class User {
     private String passwordHash;
 
     @Column(nullable = false)
-    private String firstName;
+    private String displayName;
+
+    private String bio;
+
+    private String city;
+
+    private String photoUrl;
 
     @Column(nullable = false)
-    private String lastName;
+    @Builder.Default
+    private String role = "USER";
 
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
-    @Column(nullable = false)
-    private LocalDateTime updatedAt;
-
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
-        updatedAt = LocalDateTime.now();
-    }
-
-    @PreUpdate
-    protected void onUpdate() {
-        updatedAt = LocalDateTime.now();
     }
 }

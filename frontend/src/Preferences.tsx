@@ -7,6 +7,13 @@ interface Props {
 }
 
 const CATEGORIES = ['CINEMA', 'CONCERT', 'EXHIBITION', 'THEATRE', 'FESTIVAL']
+const CATEGORY_LABELS: Record<string, string> = {
+  CINEMA: 'Cinema',
+  CONCERT: 'Concert',
+  EXHIBITION: 'Exhibition',
+  THEATRE: 'Theatre',
+  FESTIVAL: 'Festival',
+}
 const DEFAULT_PREFERENCES: PreferencesPayload = {
   preferredCategories: ['CINEMA', 'THEATRE'],
   interestTags: ['indie', 'comedy'],
@@ -102,7 +109,12 @@ export default function Preferences({ userId, userStorageKey }: Props) {
   }
 
   if (loading) {
-    return <div className="loading" data-cy="preferences-loading">Loading your preferences...</div>
+    return (
+      <div className="loading" data-cy="preferences-loading">
+        <div className="spinner" />
+        Loading your preferences...
+      </div>
+    )
   }
 
   return (
@@ -124,7 +136,7 @@ export default function Preferences({ userId, userStorageKey }: Props) {
                   className={`chip ${active ? 'chip-active' : ''}`}
                   onClick={() => toggleCategory(category)}
                 >
-                  {category}
+                  {CATEGORY_LABELS[category] ?? category}
                 </button>
               )
             })}

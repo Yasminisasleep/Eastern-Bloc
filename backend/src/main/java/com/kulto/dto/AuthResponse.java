@@ -4,17 +4,15 @@ public class AuthResponse {
     private String token;
     private String type = "Bearer";
     private String email;
-    private String firstName;
-    private String lastName;
+    private String displayName;
 
     public AuthResponse() {
     }
 
-    public AuthResponse(String token, String email, String firstName, String lastName) {
+    public AuthResponse(String token, String email, String displayName) {
         this.token = token;
         this.email = email;
-        this.firstName = firstName;
-        this.lastName = lastName;
+        this.displayName = displayName;
     }
 
     public String getToken() { return token; }
@@ -26,9 +24,6 @@ public class AuthResponse {
     public String getEmail() { return email; }
     public void setEmail(String email) { this.email = email; }
 
-    public String getFirstName() { return firstName; }
-    public void setFirstName(String firstName) { this.firstName = firstName; }
-
-    public String getLastName() { return lastName; }
-    public void setLastName(String lastName) { this.lastName = lastName; }
+    public String getDisplayName() { return displayName; }
+    public void setDisplayName(String displayName) { this.displayName = displayName; }
 }

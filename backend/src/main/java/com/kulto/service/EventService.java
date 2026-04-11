@@ -10,6 +10,7 @@ import com.kulto.repository.EventRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -40,10 +41,30 @@ public class EventService {
     public Page<EventResponse> list(EventCategory category, String city,
                                      LocalDateTime from, LocalDateTime to,
                                      String q, Pageable pageable) {
-        return eventRepository.findFiltered(
-                EventStatus.ACTIVE, LocalDateTime.now(),
-                category, city, from, to, q, pageable
-        ).map(this::toResponse);
+        LocalDateTime now = LocalDateTime.now();
+        Specification<Event> spec = Specification
+                .<Event>where((root, query, cb) -> cb.equal(root.get("status"), EventStatus.ACTIVE))
+                .and((root, query, cb) -> cb.greaterThan(root.get("date"), now));
+
+        if (category != null) {
+            spec = spec.and((root, query, cb) -> cb.equal(root.get("category"), category));
+        }
+        if (city != null && !city.isBlank()) {
+            spec = spec.and((root, query, cb) -> cb.equal(root.get("city"), city));
+        }
+        if (from != null) {
+            spec = spec.and((root, query, cb) -> cb.greaterThanOrEqualTo(root.get("date"), from));
+        }
+        if (to != null) {
+            spec = spec.and((root, query, cb) -> cb.lessThanOrEqualTo(root.get("date"), to));
+        }
+        if (q != null && !q.isBlank()) {
+            String pattern = "%" + q.toLowerCase() + "%";
+            spec = spec.and((root, query, cb) ->
+                    cb.like(cb.lower(root.get("title")), pattern));
+        }
+
+        return eventRepository.findAll(spec, pageable).map(this::toResponse);
     }
 
     public EventResponse getById(Long id) {

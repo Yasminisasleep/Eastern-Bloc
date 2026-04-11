@@ -2,9 +2,9 @@ import { createContext, useContext, useState, useEffect, ReactNode } from 'react
 
 interface AuthContextType {
   isAuthenticated: boolean
-  user: { email: string; firstName: string; lastName: string } | null
+  user: { email: string; displayName: string } | null
   token: string | null
-  login: (token: string, email: string, firstName: string, lastName: string) => void
+  login: (token: string, email: string, displayName: string) => void
   logout: () => void
 }
 
@@ -12,13 +12,13 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
-  const [user, setUser] = useState<{ email: string; firstName: string; lastName: string } | null>(null)
+  const [user, setUser] = useState<{ email: string; displayName: string } | null>(null)
   const [token, setToken] = useState<string | null>(null)
 
   useEffect(() => {
     const storedToken = localStorage.getItem('authToken')
     const storedUser = localStorage.getItem('authUser')
-    
+
     if (storedToken && storedUser) {
       setToken(storedToken)
       setUser(JSON.parse(storedUser))
@@ -26,12 +26,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [])
 
-  const login = (newToken: string, email: string, firstName: string, lastName: string) => {
+  const login = (newToken: string, email: string, displayName: string) => {
     setToken(newToken)
-    setUser({ email, firstName, lastName })
+    setUser({ email, displayName })
     setIsAuthenticated(true)
     localStorage.setItem('authToken', newToken)
-    localStorage.setItem('authUser', JSON.stringify({ email, firstName, lastName }))
+    localStorage.setItem('authUser', JSON.stringify({ email, displayName }))
   }
 
   const logout = () => {
