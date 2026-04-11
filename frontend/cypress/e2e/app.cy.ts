@@ -100,8 +100,7 @@ function visitAuthenticatedApp() {
       win.localStorage.setItem('authToken', 'fake-jwt')
       win.localStorage.setItem('authUser', JSON.stringify({
         email: 'camille@example.com',
-        firstName: 'Camille',
-        lastName: 'Durand',
+        displayName: 'Camille Durand',
       }))
     },
   })
@@ -133,8 +132,7 @@ describe('Kulto frontend', () => {
         token: 'signup-token',
         type: 'Bearer',
         email: 'camille@example.com',
-        firstName: 'Camille',
-        lastName: 'Durand',
+        displayName: 'Camille Durand',
       },
     }).as('signup')
 
@@ -143,8 +141,7 @@ describe('Kulto frontend', () => {
     cy.get('[data-cy="signup-form"]').should('be.visible')
 
     cy.get('[data-cy="signup-email"]').type('camille@example.com')
-    cy.get('[data-cy="signup-first-name"]').type('Camille')
-    cy.get('[data-cy="signup-last-name"]').type('Durand')
+    cy.get('[data-cy="signup-display-name"]').type('Camille Durand')
     cy.get('[data-cy="signup-password"]').type('weakpass')
     cy.get('[data-cy="signup-date-of-birth"]').type('1998-06-10')
     cy.get('[data-cy="signup-city"]').type('Paris')
@@ -170,8 +167,7 @@ describe('Kulto frontend', () => {
         token: 'login-token',
         type: 'Bearer',
         email: 'camille@example.com',
-        firstName: 'Camille',
-        lastName: 'Durand',
+        displayName: 'Camille Durand',
       },
     }).as('login')
 
@@ -245,6 +241,161 @@ describe('Kulto frontend', () => {
     cy.get('[data-cy="match-detail-view"]').should('be.visible')
     cy.get('[data-cy="match-accept"]').click()
     cy.wait('@acceptMatch')
-    cy.contains('ACCEPTED').should('be.visible')
+    cy.contains('Accepted').should('be.visible')
+  })
+
+  it('shows an error when login credentials are invalid', () => {
+    cy.intercept('POST', '**/api/auth/login', {
+      statusCode: 401,
+      body: { message: 'Invalid credentials' },
+    }).as('loginFail')
+
+    cy.visit('/')
+    cy.get('[data-cy="open-login"]').click()
+    cy.get('[data-cy="login-email"]').type('wrong@example.com')
+    cy.get('[data-cy="login-password"]').type('WrongPass1')
+    cy.get('[data-cy="login-submit"]').click()
+    cy.wait('@loginFail')
+    cy.get('[data-cy="login-error"]').should('be.visible')
+    cy.get('[data-cy="login-form"]').should('be.visible')
+  })
+
+  it('shows a server error when signup email is already taken', () => {
+    cy.intercept('POST', '**/api/auth/signup', {
+      statusCode: 409,
+      body: { message: 'Email already in use' },
+    }).as('signupConflict')
+
+    cy.visit('/')
+    cy.get('[data-cy="open-signup"]').click()
+    cy.get('[data-cy="signup-email"]').type('existing@example.com')
+    cy.get('[data-cy="signup-display-name"]').type('Existing User')
+    cy.get('[data-cy="signup-password"]').type('SecurePass1')
+    cy.get('[data-cy="signup-confirm-password"]').type('SecurePass1')
+    cy.get('[data-cy="signup-date-of-birth"]').type('1995-01-15')
+    cy.get('[data-cy="signup-city"]').type('Paris')
+    cy.get('[data-cy="signup-submit"]').click()
+    cy.wait('@signupConflict')
+    cy.get('[data-cy="signup-error"]').should('contain', 'Email already in use')
+  })
+
+  it('filters events by category', () => {
+    mockEventApis()
+    visitAuthenticatedApp()
+    cy.get('[data-cy="event-card"]').should('have.length', 3)
+    cy.get('[data-cy="events-category-filter"]').select('CINEMA')
+    cy.get('[data-cy="event-card"]').should('have.length', 1)
+    cy.get('[data-cy="event-card"]').first().should('contain', 'Indie Film Marathon')
+  })
+
+  it('shows empty state when search matches no events', () => {
+    mockEventApis()
+    visitAuthenticatedApp()
+    cy.get('[data-cy="events-view"]').should('be.visible')
+    cy.get('[data-cy="events-search"]').type('xyznonexistent')
+    cy.get('[data-cy="events-empty-state"]').should('be.visible')
+    cy.get('[data-cy="event-card"]').should('not.exist')
+  })
+
+  it('returns to the landing page after logout', () => {
+    mockEventApis()
+    visitAuthenticatedApp()
+    cy.get('[data-cy="events-view"]').should('be.visible')
+    cy.get('[data-cy="logout-button"]').click()
+    cy.get('[data-cy="landing-page"]').should('be.visible')
+  })
+
+  it('rejects a match locally when the backend is unavailable', () => {
+    mockEventApis()
+
+    cy.intercept('GET', '**/api/users/1/notifications', {
+      statusCode: 404,
+      body: { message: 'Not found' },
+    }).as('getNotifications')
+
+    cy.intercept('GET', '**/api/matches/501', {
+      statusCode: 404,
+      body: { message: 'Not found' },
+    }).as('getMatch')
+
+    cy.intercept('PUT', '**/api/matches/501/reject', {
+      statusCode: 404,
+      body: { message: 'Not found' },
+    }).as('rejectMatch')
+
+    visitAuthenticatedApp()
+    cy.get('[data-cy="tab-notifications"]').click()
+    cy.wait('@getNotifications')
+    cy.get('[data-cy="notifications-view"]').should('be.visible')
+    cy.get('[data-cy="open-match-501"]').click()
+    cy.wait('@getMatch')
+    cy.get('[data-cy="match-reject"]').click()
+    cy.wait('@rejectMatch')
+    cy.contains('Rejected').should('be.visible')
+  })
+
+  it('navigates back from match detail to notifications', () => {
+    mockEventApis()
+
+    cy.intercept('GET', '**/api/users/1/notifications', {
+      statusCode: 404,
+      body: { message: 'Not found' },
+    }).as('getNotifications')
+
+    cy.intercept('GET', '**/api/matches/501', {
+      statusCode: 404,
+      body: { message: 'Not found' },
+    }).as('getMatch')
+
+    visitAuthenticatedApp()
+    cy.get('[data-cy="tab-notifications"]').click()
+    cy.wait('@getNotifications')
+    cy.get('[data-cy="open-match-501"]').click()
+    cy.wait('@getMatch')
+    cy.get('[data-cy="match-detail-view"]').should('be.visible')
+    cy.get('[data-cy="match-detail-back"]').click()
+    cy.get('[data-cy="notifications-view"]').should('be.visible')
+  })
+
+  it('shows an error state when the event is not found', () => {
+    mockEventApis()
+
+    cy.intercept('GET', '**/api/events/1', {
+      statusCode: 404,
+      body: { message: 'Event not found' },
+    }).as('getEventNotFound')
+
+    visitAuthenticatedApp()
+    cy.get('[data-cy="event-card"]').first().click()
+    cy.wait('@getEventNotFound')
+    cy.get('[data-cy="event-detail-error"]').should('be.visible')
+  })
+
+  it('can switch between Events, Preferences, and Notifications tabs', () => {
+    mockEventApis()
+
+    cy.intercept('GET', '**/api/users/1/preferences', {
+      statusCode: 404,
+      body: { message: 'Not found' },
+    }).as('getPreferences')
+
+    cy.intercept('GET', '**/api/users/1/notifications', {
+      statusCode: 404,
+      body: { message: 'Not found' },
+    }).as('getNotifications')
+
+    visitAuthenticatedApp()
+    cy.get('[data-cy="events-view"]').should('be.visible')
+
+    cy.get('[data-cy="tab-preferences"]').click()
+    cy.wait('@getPreferences')
+    cy.get('[data-cy="preferences-view"]').should('be.visible')
+
+    cy.get('[data-cy="tab-notifications"]').click()
+    cy.wait('@getNotifications')
+    cy.get('[data-cy="notifications-view"]').should('be.visible')
+
+    cy.get('[data-cy="tab-events"]').click()
+    cy.get('[data-cy="events-view"]').should('be.visible')
   })
 })
