@@ -26,7 +26,12 @@ export default function EventDetail({ eventId, onBack }: Props) {
   }, [eventId])
 
   if (error) return <div className="empty-state" data-cy="event-detail-error">Event not found.</div>
-  if (!event) return <div className="loading" data-cy="event-detail-loading">🎭 Loading event...</div>
+  if (!event) return (
+    <div className="loading" data-cy="event-detail-loading">
+      <div className="spinner" />
+      Loading event...
+    </div>
+  )
 
   const getIcon = (cat: string): string => {
     return ICONS[cat as keyof typeof ICONS] || ICONS.DEFAULT
@@ -79,7 +84,7 @@ export default function EventDetail({ eventId, onBack }: Props) {
 
         <div>
           <h3>Event Info</h3>
-          <div style={{ fontSize: '4em', textAlign: 'center', margin: '30px 0' }}>
+          <div className="event-icon-display">
             {getIcon(event.category)}
           </div>
 
@@ -95,10 +100,8 @@ export default function EventDetail({ eventId, onBack }: Props) {
           )}
 
           {event.source && (
-            <div style={{ marginTop: '30px', paddingTop: '20px', borderTop: '2px solid rgba(212, 175, 55, 0.2)' }}>
-              <p style={{ color: '#b8956a', fontSize: '0.9em' }}>
-                Source: <strong>{event.source}</strong>
-              </p>
+            <div className="event-source">
+              Source: <strong>{event.source}</strong>
             </div>
           )}
         </div>

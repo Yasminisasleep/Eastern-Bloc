@@ -106,7 +106,7 @@ function App() {
                   </button>
                 </div>
                 <div className="user-info">
-                  <div className="user-name" data-cy="user-name">{user.firstName} {user.lastName}</div>
+                  <div className="user-name" data-cy="user-name">{user.displayName}</div>
                   <div className="user-email">{user.email}</div>
                 </div>
                 <button className="logout" data-cy="logout-button" onClick={handleLogout}>Logout</button>

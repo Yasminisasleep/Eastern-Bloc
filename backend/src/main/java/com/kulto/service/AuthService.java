@@ -32,15 +32,14 @@ public class AuthService {
 
         User user = User.builder()
                 .email(request.getEmail())
-                .firstName(request.getFirstName())
-                .lastName(request.getLastName())
+                .displayName(request.getDisplayName())
                 .passwordHash(passwordEncoder.encode(request.getPassword()))
                 .build();
 
         userRepository.save(user);
         String token = jwtTokenProvider.generateToken(user.getEmail());
 
-        return new AuthResponse(token, user.getEmail(), user.getFirstName(), user.getLastName());
+        return new AuthResponse(token, user.getEmail(), user.getDisplayName());
     }
 
     /**
@@ -56,7 +55,7 @@ public class AuthService {
         }
 
         String token = jwtTokenProvider.generateToken(user.getEmail());
-        return new AuthResponse(token, user.getEmail(), user.getFirstName(), user.getLastName());
+        return new AuthResponse(token, user.getEmail(), user.getDisplayName());
     }
 
     public User findByEmail(String email) {

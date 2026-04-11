@@ -43,16 +43,14 @@ class AuthServiceTest {
     void signup_createsNewUser() {
         SignupRequest request = new SignupRequest();
         request.setEmail("test@example.com");
-        request.setFirstName("John");
-        request.setLastName("Doe");
+        request.setDisplayName("John Doe");
         request.setPassword("password123");
 
         AuthResponse response = authService.signup(request);
 
         assertNotNull(response);
         assertEquals("test@example.com", response.getEmail());
-        assertEquals("John", response.getFirstName());
-        assertEquals("Doe", response.getLastName());
+        assertEquals("John Doe", response.getDisplayName());
         assertNotNull(response.getToken());
         assertEquals("Bearer", response.getType());
         assertTrue(userRepository.existsByEmail("test@example.com"));
@@ -62,16 +60,14 @@ class AuthServiceTest {
     void signup_withDuplicateEmail_throwsException() {
         SignupRequest request = new SignupRequest();
         request.setEmail("duplicate@example.com");
-        request.setFirstName("John");
-        request.setLastName("Doe");
+        request.setDisplayName("John Doe");
         request.setPassword("password123");
 
         authService.signup(request);
 
         SignupRequest duplicateRequest = new SignupRequest();
         duplicateRequest.setEmail("duplicate@example.com");
-        duplicateRequest.setFirstName("Jane");
-        duplicateRequest.setLastName("Smith");
+        duplicateRequest.setDisplayName("Jane Smith");
         duplicateRequest.setPassword("password456");
 
         assertThrows(AuthenticationException.class, () -> authService.signup(duplicateRequest));
@@ -81,8 +77,7 @@ class AuthServiceTest {
     void login_withValidCredentials_returnsToken() {
         SignupRequest signupRequest = new SignupRequest();
         signupRequest.setEmail("login@example.com");
-        signupRequest.setFirstName("John");
-        signupRequest.setLastName("Doe");
+        signupRequest.setDisplayName("John Doe");
         signupRequest.setPassword("password123");
 
         authService.signup(signupRequest);
@@ -111,8 +106,7 @@ class AuthServiceTest {
     void login_withWrongPassword_throwsException() {
         SignupRequest signupRequest = new SignupRequest();
         signupRequest.setEmail("wrongpass@example.com");
-        signupRequest.setFirstName("John");
-        signupRequest.setLastName("Doe");
+        signupRequest.setDisplayName("John Doe");
         signupRequest.setPassword("password123");
 
         authService.signup(signupRequest);
@@ -128,8 +122,7 @@ class AuthServiceTest {
     void findByEmail_existingUser_returnsUser() {
         SignupRequest request = new SignupRequest();
         request.setEmail("find@example.com");
-        request.setFirstName("John");
-        request.setLastName("Doe");
+        request.setDisplayName("John Doe");
         request.setPassword("password123");
 
         authService.signup(request);
@@ -138,7 +131,7 @@ class AuthServiceTest {
 
         assertNotNull(user);
         assertEquals("find@example.com", user.getEmail());
-        assertEquals("John", user.getFirstName());
+        assertEquals("John Doe", user.getDisplayName());
     }
 
     @Test

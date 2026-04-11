@@ -8,8 +8,7 @@ interface Props {
 
 export default function Signup({ onToggleForm }: Props) {
   const [email, setEmail] = useState('')
-  const [firstName, setFirstName] = useState('')
-  const [lastName, setLastName] = useState('')
+  const [displayName, setDisplayName] = useState('')
   const [password, setPassword] = useState('')
   const [dateOfBirth, setDateOfBirth] = useState('')
   const [city, setCity] = useState('')
@@ -57,13 +56,12 @@ export default function Signup({ onToggleForm }: Props) {
     try {
       const response = await signup({
         email,
-        firstName,
-        lastName,
+        displayName,
         password,
         dateOfBirth,
         city,
       })
-      login(response.token, response.email, response.firstName, response.lastName)
+      login(response.token, response.email, response.displayName)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Signup failed')
     } finally {
@@ -72,6 +70,7 @@ export default function Signup({ onToggleForm }: Props) {
   }
 
   return (
+    <div className="form-page">
     <div className="form-container" data-cy="signup-form">
       <h2>Sign Up</h2>
       <form onSubmit={handleSubmit}>
@@ -88,27 +87,39 @@ export default function Signup({ onToggleForm }: Props) {
         </div>
 
         <div className="form-group">
-          <label>First Name</label>
+          <label>Display Name</label>
           <input
-            data-cy="signup-first-name"
+            data-cy="signup-display-name"
             type="text"
-            value={firstName}
-            onChange={(e) => setFirstName(e.target.value)}
-            placeholder="John"
+            value={displayName}
+            onChange={(e) => setDisplayName(e.target.value)}
+            placeholder="John Doe"
             required
           />
         </div>
 
-        <div className="form-group">
-          <label>Last Name</label>
-          <input
-            data-cy="signup-last-name"
-            type="text"
-            value={lastName}
-            onChange={(e) => setLastName(e.target.value)}
-            placeholder="Doe"
-            required
-          />
+        <div className="form-row">
+          <div className="form-group">
+            <label>City</label>
+            <input
+              data-cy="signup-city"
+              type="text"
+              value={city}
+              onChange={(e) => setCity(e.target.value)}
+              placeholder="Paris"
+              required
+            />
+          </div>
+          <div className="form-group">
+            <label>Date of Birth</label>
+            <input
+              data-cy="signup-date-of-birth"
+              type="date"
+              value={dateOfBirth}
+              onChange={(e) => setDateOfBirth(e.target.value)}
+              required
+            />
+          </div>
         </div>
 
         <div className="form-group">
@@ -119,29 +130,6 @@ export default function Signup({ onToggleForm }: Props) {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="••••••••"
-            required
-          />
-        </div>
-
-        <div className="form-group">
-          <label>Date of Birth</label>
-          <input
-            data-cy="signup-date-of-birth"
-            type="date"
-            value={dateOfBirth}
-            onChange={(e) => setDateOfBirth(e.target.value)}
-            required
-          />
-        </div>
-
-        <div className="form-group">
-          <label>City</label>
-          <input
-            data-cy="signup-city"
-            type="text"
-            value={city}
-            onChange={(e) => setCity(e.target.value)}
-            placeholder="Paris"
             required
           />
         </div>
@@ -170,6 +158,7 @@ export default function Signup({ onToggleForm }: Props) {
       <div className="toggle-form">
         Already have an account? <a data-cy="switch-to-login" onClick={onToggleForm}>Login</a>
       </div>
+    </div>
     </div>
   )
 }

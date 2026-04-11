@@ -99,7 +99,12 @@ export default function Notifications({ userId, userStorageKey, onOpenMatch }: P
     })
   }
 
-  if (loading) return <div className="loading" data-cy="notifications-loading">Loading notifications...</div>
+  if (loading) return (
+    <div className="loading" data-cy="notifications-loading">
+      <div className="spinner" />
+      Loading notifications...
+    </div>
+  )
 
   return (
     <div className="panel-card" data-cy="notifications-view">

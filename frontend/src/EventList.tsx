@@ -57,7 +57,12 @@ export default function EventList({ onSelect }: Props) {
         </select>
       </div>
 
-      {loading && <div className="loading" data-cy="events-loading">🎭 Loading events...</div>}
+      {loading && (
+        <div className="loading" data-cy="events-loading">
+          <div className="spinner" />
+          Loading events...
+        </div>
+      )}
 
       {!loading && events.length === 0 && (
         <div className="empty-state" data-cy="events-empty-state">No events found. Check back soon!</div>
