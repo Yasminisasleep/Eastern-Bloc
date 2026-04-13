@@ -74,6 +74,21 @@ body {
   }
 }
 
+@media (min-width: 768px) {
+  .app-shell {
+    max-width: 900px;
+    box-shadow: none;
+    border-left: 1px solid var(--border);
+    border-right: 1px solid var(--border);
+  }
+}
+
+@media (min-width: 1100px) {
+  .app-shell {
+    max-width: 1100px;
+  }
+}
+
 /* ─── Top Bar ─────────────────────────────────────────── */
 .top-bar {
   display: flex;
@@ -119,6 +134,18 @@ body {
   background: var(--bg);
   display: flex;
   z-index: 20;
+}
+
+@media (min-width: 768px) {
+  .bottom-nav {
+    max-width: 900px;
+  }
+}
+
+@media (min-width: 1100px) {
+  .bottom-nav {
+    max-width: 1100px;
+  }
 }
 
 .bottom-nav-btn {
@@ -645,6 +672,19 @@ label {
   grid-template-columns: 1fr 1fr;
   gap: 12px;
   padding: var(--space-sm) var(--space-md) var(--space-md);
+}
+
+@media (min-width: 768px) {
+  .events-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+}
+
+@media (min-width: 1100px) {
+  .events-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
 }
 
 /* Category select wrapper */

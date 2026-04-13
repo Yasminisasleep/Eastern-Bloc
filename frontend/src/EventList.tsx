@@ -30,6 +30,38 @@ const DATE_CHIPS = [
   { label: 'This week', value: 'week' },
 ]
 
+function getDateRange(chip: string): { from: string; to: string } {
+  const now = new Date()
+  const start = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0)
+  const end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59)
+
+  if (chip === 'today') {
+    return {
+      from: start.toISOString().slice(0, 19),
+      to: end.toISOString().slice(0, 19),
+    }
+  }
+
+  if (chip === 'weekend') {
+    const day = start.getDay() // 0=Sun, 6=Sat
+    const daysToSat = day === 0 ? 6 : (6 - day)
+    const sat = new Date(start); sat.setDate(start.getDate() + daysToSat)
+    const sun = new Date(sat); sun.setDate(sat.getDate() + 1)
+    const sunEnd = new Date(sun); sunEnd.setHours(23, 59, 59)
+    return {
+      from: sat.toISOString().slice(0, 19),
+      to: sunEnd.toISOString().slice(0, 19),
+    }
+  }
+
+  // week
+  const weekEnd = new Date(end); weekEnd.setDate(end.getDate() + 7)
+  return {
+    from: start.toISOString().slice(0, 19),
+    to: weekEnd.toISOString().slice(0, 19),
+  }
+}
+
 function getCategoryClass(cat: string): string {
   return `cat-${cat.toLowerCase()}`
 }
@@ -42,6 +74,7 @@ export default function EventList({ onSelect }: Props) {
   const [events, setEvents] = useState<Event[]>([])
   const [category, setCategory] = useState('')
   const [search, setSearch] = useState('')
+  const [dateChip, setDateChip] = useState('')
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -49,12 +82,17 @@ export default function EventList({ onSelect }: Props) {
     const params: Record<string, string> = {}
     if (category) params.category = category
     if (search) params.q = search
+    if (dateChip) {
+      const range = getDateRange(dateChip)
+      params.from = range.from
+      params.to = range.to
+    }
 
     fetchEvents(params)
       .then((page: PageResponse<Event>) => setEvents(page.content))
       .catch(() => setEvents([]))
       .finally(() => setLoading(false))
-  }, [category, search])
+  }, [category, search, dateChip])
 
   return (
     <div data-cy="events-view">
@@ -107,7 +145,13 @@ export default function EventList({ onSelect }: Props) {
 
       <div className="date-chips">
         {DATE_CHIPS.map(chip => (
-          <button key={chip.value} className="date-chip">{chip.label}</button>
+          <button
+            key={chip.value}
+            className={`date-chip${dateChip === chip.value ? ' active' : ''}`}
+            onClick={() => setDateChip(dateChip === chip.value ? '' : chip.value)}
+          >
+            {chip.label}
+          </button>
         ))}
       </div>
 
