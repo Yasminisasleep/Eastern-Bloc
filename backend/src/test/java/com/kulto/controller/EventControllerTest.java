@@ -5,7 +5,7 @@ import com.kulto.domain.Event;
 import com.kulto.domain.EventCategory;
 import com.kulto.domain.EventStatus;
 import com.kulto.dto.EventRequest;
-import com.kulto.repository.EventRepository;
+import com.kulto.repository.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,8 +37,16 @@ class EventControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
+    @Autowired
+    private NotificationRepository notificationRepository;
+
+    @Autowired
+    private MatchRepository matchRepository;
+
     @BeforeEach
     void setUp() {
+        notificationRepository.deleteAll();
+        matchRepository.deleteAll();
         eventRepository.deleteAll();
     }
 

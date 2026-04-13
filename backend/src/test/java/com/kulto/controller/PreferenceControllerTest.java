@@ -3,8 +3,7 @@ package com.kulto.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kulto.domain.*;
 import com.kulto.dto.PreferenceRequest;
-import com.kulto.repository.PreferenceRepository;
-import com.kulto.repository.UserRepository;
+import com.kulto.repository.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,12 +28,18 @@ class PreferenceControllerTest {
     @Autowired private ObjectMapper objectMapper;
     @Autowired private UserRepository userRepository;
     @Autowired private PreferenceRepository preferenceRepository;
+    @Autowired private NotificationRepository notificationRepository;
+    @Autowired private MatchRepository matchRepository;
+    @Autowired private EventRepository eventRepository;
 
     private User testUser;
 
     @BeforeEach
     void setUp() {
+        notificationRepository.deleteAll();
+        matchRepository.deleteAll();
         preferenceRepository.deleteAll();
+        eventRepository.deleteAll();
         userRepository.deleteAll();
         testUser = userRepository.save(User.builder()
                 .email("pref@test.com").displayName("Pref User").passwordHash("hash").build());
