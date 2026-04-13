@@ -24,9 +24,7 @@ function App() {
   const userStorageKey = user?.email || 'anonymous'
 
   useEffect(() => {
-    if (token) {
-      setAuthToken(token)
-    }
+    if (token) setAuthToken(token)
   }, [token])
 
   const handleLogout = () => {
@@ -45,7 +43,6 @@ function App() {
     if (activeView === 'preferences') {
       return <Preferences userId={userId} userStorageKey={userStorageKey} />
     }
-
     if (activeView === 'notifications') {
       return (
         <Notifications
@@ -55,9 +52,8 @@ function App() {
         />
       )
     }
-
     if (activeView === 'match-detail') {
-    if (!selectedMatchId) {
+      if (!selectedMatchId) {
         return <div className="empty-state" data-cy="match-empty-state">No match selected yet.</div>
       }
       return (
@@ -68,7 +64,6 @@ function App() {
         />
       )
     }
-
     return selectedEventId ? (
       <EventDetail eventId={selectedEventId} onBack={() => setSelectedEventId(null)} />
     ) : (
@@ -86,38 +81,58 @@ function App() {
     return <Landing onLogin={() => setShowLogin(true)} onSignup={() => setShowSignup(true)} />
   }
 
+  const isEventsActive = activeView === 'events'
+  const isOutingsActive = activeView === 'notifications' || activeView === 'match-detail'
+  const isProfileActive = activeView === 'preferences'
+
   return (
     <div data-cy="authenticated-app">
-      <header>
-        <div className="header-container">
-          <h1>Kulto</h1>
-          <nav>
+      <div className="app-shell">
+        <div className="top-bar">
+          <span className="top-bar-logo">kulto</span>
+          <div className="top-bar-actions">
             {user && (
-              <div className="nav-user">
-                <div className="app-tabs" data-cy="app-tabs">
-                  <button type="button" data-cy="tab-events" className={activeView === 'events' ? 'tab-btn tab-active' : 'tab-btn'} onClick={() => setActiveView('events')}>
-                    Events
-                  </button>
-                  <button type="button" data-cy="tab-preferences" className={activeView === 'preferences' ? 'tab-btn tab-active' : 'tab-btn'} onClick={() => setActiveView('preferences')}>
-                    Preferences
-                  </button>
-                  <button type="button" data-cy="tab-notifications" className={activeView === 'notifications' || activeView === 'match-detail' ? 'tab-btn tab-active' : 'tab-btn'} onClick={() => setActiveView('notifications')}>
-                    Notifications
-                  </button>
-                </div>
-                <div className="user-info">
-                  <div className="user-name" data-cy="user-name">{user.displayName}</div>
-                  <div className="user-email">{user.email}</div>
-                </div>
-                <button className="logout" data-cy="logout-button" onClick={handleLogout}>Logout</button>
-              </div>
+              <span className="top-bar-user" data-cy="user-name">{user.displayName}</span>
             )}
-          </nav>
+            <button className="btn-logout" data-cy="logout-button" onClick={handleLogout}>
+              Logout
+            </button>
+          </div>
         </div>
-      </header>
 
-      <div className="main-container" data-cy="main-container">
-        {renderContent()}
+        <div className="screen">
+          {renderContent()}
+        </div>
+
+        <nav className="bottom-nav" data-cy="app-tabs">
+          <button
+            type="button"
+            className={`bottom-nav-btn${isEventsActive ? ' active' : ''}`}
+            data-cy="tab-events"
+            onClick={() => { setActiveView('events'); setSelectedEventId(null) }}
+          >
+            <span className="bottom-nav-icon">🎭</span>
+            Discover
+          </button>
+          <button
+            type="button"
+            className={`bottom-nav-btn${isOutingsActive ? ' active' : ''}`}
+            data-cy="tab-notifications"
+            onClick={() => setActiveView('notifications')}
+          >
+            <span className="bottom-nav-icon">♥</span>
+            Outings
+          </button>
+          <button
+            type="button"
+            className={`bottom-nav-btn${isProfileActive ? ' active' : ''}`}
+            data-cy="tab-preferences"
+            onClick={() => setActiveView('preferences')}
+          >
+            <span className="bottom-nav-icon">👤</span>
+            Me
+          </button>
+        </nav>
       </div>
     </div>
   )
