@@ -1,3 +1,74 @@
+type MatchSummary = {
+  id: number
+  status: 'PENDING' | 'ACCEPTED' | 'REJECTED' | 'CONFIRMED' | 'CANCELLED'
+  compatibilityScore: number
+  matchedUserName: string
+  event: {
+    id: number
+    title: string
+    category: string
+    date: string
+    city: string
+    venue: string
+  }
+}
+
+type NotificationItem = {
+  id: number
+  status: 'UNREAD' | 'READ'
+  createdAt: string
+  message: string
+  match: MatchSummary
+}
+
+type MatchDetailType = MatchSummary & {
+  matchedUserBio?: string
+  matchedUserCity?: string
+  matchedUserTags?: string[]
+}
+
+const FUTURE_DATE = new Date(Date.now() + 1000 * 60 * 60 * 24 * 5).toISOString()
+
+const mockNotifications: NotificationItem[] = [
+  {
+    id: 1001,
+    status: 'UNREAD',
+    createdAt: new Date().toISOString(),
+    message: 'We found a strong match for your theatre interests.',
+    match: {
+      id: 701,
+      status: 'PENDING',
+      compatibilityScore: 0.87,
+      matchedUserName: 'Alice M.',
+      event: { id: 10, title: 'Contemporary Theatre Night', category: 'THEATRE', date: FUTURE_DATE, city: 'Paris', venue: 'Le Petit Chatelet' },
+    },
+  },
+  {
+    id: 1002,
+    status: 'READ',
+    createdAt: new Date(Date.now() - 3600000).toISOString(),
+    message: 'A cinema fan with similar tags is available this weekend.',
+    match: {
+      id: 702,
+      status: 'PENDING',
+      compatibilityScore: 0.63,
+      matchedUserName: 'Bob K.',
+      event: { id: 11, title: 'Indie Film Marathon', category: 'CINEMA', date: FUTURE_DATE, city: 'Paris', venue: 'Studio Lumiere' },
+    },
+  },
+]
+
+const mockMatchDetail: MatchDetailType = {
+  id: 701,
+  status: 'PENDING',
+  compatibilityScore: 0.87,
+  matchedUserName: 'Alice M.',
+  matchedUserBio: 'I love discovering films outside the mainstream.',
+  matchedUserCity: 'Paris',
+  matchedUserTags: ['arthouse', 'theatre', 'world cinema'],
+  event: { id: 10, title: 'Contemporary Theatre Night', category: 'THEATRE', date: FUTURE_DATE, city: 'Paris', venue: 'Le Petit Chatelet' },
+}
+
 type EventItem = {
   id: number
   title: string
@@ -397,5 +468,152 @@ describe('Kulto frontend', () => {
 
     cy.get('[data-cy="tab-events"]').click()
     cy.get('[data-cy="events-view"]').should('be.visible')
+  })
+})
+
+describe('Matching engine', () => {
+  beforeEach(() => {
+    cy.clearLocalStorage()
+    mockEventApis()
+  })
+
+  function mockNotificationsApi(body: NotificationItem[] = mockNotifications, statusCode = 200) {
+    cy.intercept('GET', '**/api/users/1/notifications', { statusCode, body }).as('getNotifications')
+  }
+
+  function mockMatchApi(body: MatchDetailType = mockMatchDetail, statusCode = 200) {
+    cy.intercept('GET', `**/api/matches/${body.id}`, { statusCode, body }).as('getMatch')
+  }
+
+  function goToNotifications() {
+    visitAuthenticatedApp()
+    cy.get('[data-cy="tab-notifications"]').click()
+    cy.wait('@getNotifications')
+    cy.get('[data-cy="notifications-view"]').should('be.visible')
+  }
+
+  it('loads notifications from the API and shows unread badge', () => {
+    mockNotificationsApi()
+    goToNotifications()
+    cy.get('[data-cy="notification-card"]').should('have.length', 2)
+    cy.get('[data-cy="notifications-unread-count"]').should('contain', '1 new')
+  })
+
+  it('shows empty state when API returns no notifications', () => {
+    mockNotificationsApi([])
+    goToNotifications()
+    cy.get('[data-cy="notifications-empty-state"]').should('be.visible')
+    cy.get('[data-cy="notification-card"]').should('not.exist')
+  })
+
+  it('loads match detail from the API with full profile', () => {
+    mockNotificationsApi()
+    mockMatchApi()
+    goToNotifications()
+    cy.get('[data-cy="open-match-701"]').click()
+    cy.wait('@getMatch')
+    cy.get('[data-cy="match-detail-view"]').should('be.visible')
+    cy.contains('Alice M.').should('be.visible')
+    cy.contains('Paris').should('be.visible')
+    cy.contains('87%').should('be.visible')
+    cy.contains('arthouse').should('be.visible')
+    cy.contains('Contemporary Theatre Night').should('be.visible')
+  })
+
+  it('accepts a match via the API and shows Accepted status', () => {
+    const accepted: MatchDetailType = { ...mockMatchDetail, status: 'ACCEPTED' }
+    mockNotificationsApi()
+    mockMatchApi()
+    cy.intercept('PUT', '**/api/matches/701/accept', { statusCode: 200, body: accepted }).as('acceptMatch')
+
+    goToNotifications()
+    cy.get('[data-cy="open-match-701"]').click()
+    cy.wait('@getMatch')
+    cy.get('[data-cy="match-accept"]').click()
+    cy.wait('@acceptMatch')
+    cy.contains('Accepted').should('be.visible')
+    cy.get('[data-cy="match-accept"]').should('be.disabled')
+  })
+
+  it('rejects a match via the API and shows Rejected status', () => {
+    const rejected: MatchDetailType = { ...mockMatchDetail, status: 'REJECTED' }
+    mockNotificationsApi()
+    mockMatchApi()
+    cy.intercept('PUT', '**/api/matches/701/reject', { statusCode: 200, body: rejected }).as('rejectMatch')
+
+    goToNotifications()
+    cy.get('[data-cy="open-match-701"]').click()
+    cy.wait('@getMatch')
+    cy.get('[data-cy="match-reject"]').click()
+    cy.wait('@rejectMatch')
+    cy.contains('Rejected').should('be.visible')
+    cy.get('[data-cy="match-reject"]').should('be.disabled')
+  })
+
+  it('disables accept button when match is already accepted', () => {
+    const accepted: MatchDetailType = { ...mockMatchDetail, status: 'ACCEPTED' }
+    mockNotificationsApi()
+    mockMatchApi(accepted)
+
+    goToNotifications()
+    cy.get('[data-cy="open-match-701"]').click()
+    cy.wait('@getMatch')
+    cy.get('[data-cy="match-accept"]').should('be.disabled')
+    cy.get('[data-cy="match-reject"]').should('not.be.disabled')
+  })
+
+  it('disables reject button when match is already rejected', () => {
+    const rejected: MatchDetailType = { ...mockMatchDetail, status: 'REJECTED' }
+    mockNotificationsApi()
+    mockMatchApi(rejected)
+
+    goToNotifications()
+    cy.get('[data-cy="open-match-701"]').click()
+    cy.wait('@getMatch')
+    cy.get('[data-cy="match-reject"]').should('be.disabled')
+    cy.get('[data-cy="match-accept"]').should('not.be.disabled')
+  })
+
+  it('can navigate to a second notification match', () => {
+    const match702: MatchDetailType = {
+      id: 702,
+      status: 'PENDING',
+      compatibilityScore: 0.63,
+      matchedUserName: 'Bob K.',
+      matchedUserCity: 'Paris',
+      matchedUserTags: ['indie', 'cinema'],
+      event: { id: 11, title: 'Indie Film Marathon', category: 'CINEMA', date: FUTURE_DATE, city: 'Paris', venue: 'Studio Lumiere' },
+    }
+    mockNotificationsApi()
+    cy.intercept('GET', '**/api/matches/702', { statusCode: 200, body: match702 }).as('getMatch702')
+
+    goToNotifications()
+    cy.get('[data-cy="open-match-702"]').click()
+    cy.wait('@getMatch702')
+    cy.get('[data-cy="match-detail-view"]').should('be.visible')
+    cy.contains('Bob K.').should('be.visible')
+    cy.contains('63%').should('be.visible')
+    cy.contains('Indie Film Marathon').should('be.visible')
+  })
+
+  it('navigates back from match detail to notifications', () => {
+    mockNotificationsApi()
+    mockMatchApi()
+
+    goToNotifications()
+    cy.get('[data-cy="open-match-701"]').click()
+    cy.wait('@getMatch')
+    cy.get('[data-cy="match-detail-view"]').should('be.visible')
+    cy.get('[data-cy="match-detail-back"]').click()
+    cy.get('[data-cy="notifications-view"]').should('be.visible')
+  })
+
+  it('falls back to mock data when notifications API fails', () => {
+    mockNotificationsApi([], 500)
+    visitAuthenticatedApp()
+    cy.get('[data-cy="tab-notifications"]').click()
+    cy.wait('@getNotifications')
+    cy.get('[data-cy="notifications-view"]').should('be.visible')
+    cy.get('[data-cy="notification-card"]').should('have.length.at.least', 1)
   })
 })
