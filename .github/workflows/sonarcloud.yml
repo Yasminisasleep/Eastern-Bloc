@@ -37,6 +37,10 @@ jobs:
         run: mvn clean verify
         working-directory: backend
 
+      - name: Copy dependencies for Sonar analysis
+        run: mvn dependency:copy-dependencies -DoutputDirectory=target/dependency
+        working-directory: backend
+
       - name: Analyze with SonarCloud
         uses: SonarSource/sonarcloud-github-action@4006f663ecaf1f8093e8e4abb9227f6041f52216
         env:
@@ -49,4 +53,5 @@ jobs:
             -Dsonar.sources=src/main/java
             -Dsonar.tests=src/test/java
             -Dsonar.java.binaries=target/classes
+            -Dsonar.java.libraries=target/dependency
             -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
