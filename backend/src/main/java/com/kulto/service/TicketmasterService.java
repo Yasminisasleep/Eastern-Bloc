@@ -58,7 +58,7 @@ public class TicketmasterService {
         }
     }
 
-    private List<Event> parseTicketmasterResponse(String jsonResponse) {
+    public List<Event> parseTicketmasterResponse(String jsonResponse) {
         List<Event> events = new ArrayList<>();
 
         try {

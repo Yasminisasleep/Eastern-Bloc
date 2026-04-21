@@ -58,6 +58,8 @@ services:
         condition: service_healthy
       kafka:
         condition: service_started
+    env_file:
+      - .env
     environment:
       DB_HOST: ${DB_HOST:-postgres}
       DB_PORT: ${DB_PORT:-5432}
