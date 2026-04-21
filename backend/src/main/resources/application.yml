@@ -33,6 +33,10 @@ springdoc:
   swagger-ui:
     path: /swagger-ui.html
 
+ticketmaster:
+  enabled: ${TICKETMASTER_ENABLED:false}
+  api-key: ${TICKETMASTER_API_KEY:}
+
 jwt:
   secret: ${JWT_SECRET:ThisIsAVeryLongSecretKeyForJWTSigningPurposesOnlyDoNotUseInProduction}
   expiration: ${JWT_EXPIRATION:86400000}

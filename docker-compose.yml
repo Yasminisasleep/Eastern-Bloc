@@ -68,6 +68,8 @@ services:
       JWT_SECRET: ${JWT_SECRET:-ThisIsAVeryLongSecretKeyForJWTSigningPurposesOnlyDoNotUseInProduction}
       JWT_EXPIRATION: ${JWT_EXPIRATION:-86400000}
       SERVER_PORT: ${SERVER_PORT:-8080}
+      TICKETMASTER_ENABLED: ${TICKETMASTER_ENABLED:-false}
+      TICKETMASTER_API_KEY: ${TICKETMASTER_API_KEY:-}
     networks:
       - kulto-net
 
