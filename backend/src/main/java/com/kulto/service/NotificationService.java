@@ -34,6 +34,13 @@ public class NotificationService {
                 "New match with " + match.getUserOne().getDisplayName() + "!");
     }
 
+    public void createMatchAcceptedNotification(Match match) {
+        User u1 = match.getUserOne();
+        User u2 = match.getUserTwo();
+        createNotificationForUser(u1, match, "Match confirmed with " + u2.getDisplayName() + "! Open the match to see contact details.");
+        createNotificationForUser(u2, match, "Match confirmed with " + u1.getDisplayName() + "! Open the match to see contact details.");
+    }
+
     private void createNotificationForUser(User user, Match match, String message) {
         Notification notification = Notification.builder()
                 .user(user)

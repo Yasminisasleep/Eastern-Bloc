@@ -31,7 +31,7 @@ export default function Signup({ onToggleForm }: Props) {
     setLoading(true)
     try {
       const response = await signup({ email, displayName, password, dateOfBirth, city })
-      login(response.token, response.email, response.displayName)
+      login(response.token, response.id, response.email, response.displayName)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Signup failed')
     } finally {

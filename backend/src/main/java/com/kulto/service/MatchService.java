@@ -21,6 +21,7 @@ public class MatchService {
 
     private final MatchRepository matchRepository;
     private final PreferenceRepository preferenceRepository;
+    private final NotificationService notificationService;
 
     public MatchResponse getMatch(Long matchId, Long requestingUserId) {
         Match match = matchRepository.findById(matchId)
@@ -36,7 +37,18 @@ public class MatchService {
             throw new IllegalStateException("Match is not in PENDING status");
         }
 
-        match.setStatus(MatchStatus.ACCEPTED);
+        boolean isUserOne = match.getUserOne().getId().equals(requestingUserId);
+        if (isUserOne) {
+            match.setUserOneAccepted(true);
+        } else {
+            match.setUserTwoAccepted(true);
+        }
+
+        if (match.isUserOneAccepted() && match.isUserTwoAccepted()) {
+            match.setStatus(MatchStatus.ACCEPTED);
+            notificationService.createMatchAcceptedNotification(match);
+        }
+
         matchRepository.save(match);
         return toResponse(match, requestingUserId);
     }
@@ -75,14 +87,27 @@ public class MatchService {
                     .build();
         }
 
+        String responseStatus;
+        boolean bothAccepted = match.getStatus() == MatchStatus.ACCEPTED;
+        if (match.getStatus() == MatchStatus.REJECTED || match.getStatus() == MatchStatus.CANCELLED) {
+            responseStatus = match.getStatus().name();
+        } else if (bothAccepted) {
+            responseStatus = MatchStatus.CONFIRMED.name();
+        } else {
+            boolean isUserOne = match.getUserOne().getId().equals(requestingUserId);
+            boolean myAccepted = isUserOne ? match.isUserOneAccepted() : match.isUserTwoAccepted();
+            responseStatus = myAccepted ? MatchStatus.ACCEPTED.name() : MatchStatus.PENDING.name();
+        }
+
         return MatchResponse.builder()
                 .id(match.getId())
-                .status(match.getStatus().name())
+                .status(responseStatus)
                 .compatibilityScore(match.getCompatibilityScore())
                 .matchedUserName(matchedUser.getDisplayName())
                 .matchedUserBio(matchedUser.getBio())
                 .matchedUserCity(matchedUser.getCity())
                 .matchedUserTags(matchedUserTags)
+                .matchedUserContactLink(bothAccepted ? matchedUser.getContactLink() : null)
                 .event(eventResponse)
                 .build();
     }

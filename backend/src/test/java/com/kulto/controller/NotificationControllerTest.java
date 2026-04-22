@@ -61,7 +61,7 @@ class NotificationControllerTest {
     }
 
     @Test
-    @WithMockUser
+    @WithMockUser(username = "n1@test.com")
     void getNotifications_returnsList() throws Exception {
         mockMvc.perform(get("/api/users/" + user1.getId() + "/notifications"))
                 .andExpect(status().isOk())
@@ -71,7 +71,7 @@ class NotificationControllerTest {
     }
 
     @Test
-    @WithMockUser
+    @WithMockUser(username = "n1@test.com")
     void getNotifications_noNotifications_returnsEmptyArray() throws Exception {
         notificationRepository.deleteAll();
 
@@ -79,5 +79,12 @@ class NotificationControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray())
                 .andExpect(jsonPath("$").isEmpty());
+    }
+
+    @Test
+    @WithMockUser(username = "n2@test.com")
+    void getNotifications_otherUserId_returns403() throws Exception {
+        mockMvc.perform(get("/api/users/" + user1.getId() + "/notifications"))
+                .andExpect(status().isForbidden());
     }
 }

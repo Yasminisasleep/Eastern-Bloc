@@ -26,12 +26,13 @@ public class AuthService {
      * Password is hashed using BCrypt before storage.
      */
     public AuthResponse signup(SignupRequest request) {
-        if (userRepository.existsByEmail(request.getEmail())) {
+        String email = normalize(request.getEmail());
+        if (userRepository.existsByEmail(email)) {
             throw new AuthenticationException("Email already registered");
         }
 
         User user = User.builder()
-                .email(request.getEmail())
+                .email(email)
                 .displayName(request.getDisplayName())
                 .passwordHash(passwordEncoder.encode(request.getPassword()))
                 .build();
@@ -39,7 +40,7 @@ public class AuthService {
         userRepository.save(user);
         String token = jwtTokenProvider.generateToken(user.getEmail());
 
-        return new AuthResponse(token, user.getEmail(), user.getDisplayName());
+        return new AuthResponse(user.getId(), token, user.getEmail(), user.getDisplayName());
     }
 
     /**
@@ -47,7 +48,7 @@ public class AuthService {
      * Returns a JWT token if credentials are valid.
      */
     public AuthResponse login(LoginRequest request) {
-        User user = userRepository.findByEmail(request.getEmail())
+        User user = userRepository.findByEmail(normalize(request.getEmail()))
                 .orElseThrow(() -> new AuthenticationException("Invalid email or password"));
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
@@ -55,11 +56,15 @@ public class AuthService {
         }
 
         String token = jwtTokenProvider.generateToken(user.getEmail());
-        return new AuthResponse(token, user.getEmail(), user.getDisplayName());
+        return new AuthResponse(user.getId(), token, user.getEmail(), user.getDisplayName());
     }
 
     public User findByEmail(String email) {
-        return userRepository.findByEmail(email)
+        return userRepository.findByEmail(normalize(email))
                 .orElseThrow(() -> new AuthenticationException("User not found"));
+    }
+
+    private String normalize(String email) {
+        return email == null ? null : email.trim().toLowerCase();
     }
 }

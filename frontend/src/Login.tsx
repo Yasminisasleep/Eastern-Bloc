@@ -20,7 +20,7 @@ export default function Login({ onToggleForm }: Props) {
     setLoading(true)
     try {
       const response = await login(email, password)
-      authLogin(response.token, response.email, response.displayName)
+      authLogin(response.token, response.id, response.email, response.displayName)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Login failed')
     } finally {

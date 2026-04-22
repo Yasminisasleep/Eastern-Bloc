@@ -9,14 +9,10 @@ interface Props {
 
 const ICONS: Record<string, string> = { CINEMA: '🎬', CONCERT: '🎵', EXHIBITION: '🖼️', THEATRE: '🎭', FESTIVAL: '🎪', DEFAULT: '🎨' }
 const CATEGORY_LABELS: Record<string, string> = { CINEMA: 'Cinema', CONCERT: 'Concert', EXHIBITION: 'Exhibition', THEATRE: 'Theatre', FESTIVAL: 'Festival' }
-const STATUS_LABELS: Record<string, string> = { PENDING: 'Pending', ACCEPTED: 'Accepted', REJECTED: 'Rejected', CONFIRMED: 'Confirmed', CANCELLED: 'Cancelled' }
+const STATUS_LABELS: Record<string, string> = { PENDING: 'Pending', ACCEPTED: 'Waiting for other', REJECTED: 'Rejected', CONFIRMED: 'Confirmed', CANCELLED: 'Cancelled' }
 
 function getStorageKey(k: string, id: number) { return `kulto.match.${k}.${id}` }
 function getInitials(name: string) { return name.split(' ').map(p => p[0] ?? '').join('').toUpperCase().slice(0, 2) }
-
-function createMockMatch(matchId: number): MatchDetailModel {
-  return { id: matchId, status: 'PENDING', compatibilityScore: 0.87, matchedUserName: 'Camille', matchedUserBio: 'I love discovering films outside the mainstream…', matchedUserCity: 'Paris', matchedUserTags: ['sci-fi', 'arthouse', 'world cinema'], event: { id: 999, title: 'Contemporary Theatre Night', category: 'THEATRE', date: new Date(Date.now() + 1000 * 60 * 60 * 24 * 3).toISOString(), city: 'Paris', venue: 'Le Petit Chatelet' } }
-}
 
 export default function MatchDetail({ matchId, userStorageKey, onBack }: Props) {
   const [match, setMatch] = useState<MatchDetailModel | null>(null)
@@ -30,29 +26,27 @@ export default function MatchDetail({ matchId, userStorageKey, onBack }: Props) 
     setLoading(true); setError('')
     fetchMatchDetail(matchId)
       .then(d => { if (mounted) { setMatch(d); localStorage.setItem(storageKey, JSON.stringify(d)) } })
-      .catch(() => { const local = localStorage.getItem(storageKey); if (mounted) setMatch(local ? JSON.parse(local) : createMockMatch(matchId)) })
+      .catch(err => { if (mounted) { setMatch(null); setError(err instanceof Error ? err.message : 'Failed to load match') } })
       .finally(() => { if (mounted) setLoading(false) })
     return () => { mounted = false }
   }, [matchId, storageKey])
 
-  const updateLocal = (status: MatchDetailModel['status']) => setMatch(cur => { if (!cur) return cur; const u = { ...cur, status }; localStorage.setItem(storageKey, JSON.stringify(u)); return u })
-
   const onAccept = async () => {
     setUpdating(true); setError('')
     try { const u = await acceptMatch(matchId); setMatch(u); localStorage.setItem(storageKey, JSON.stringify(u)) }
-    catch { updateLocal('ACCEPTED') }
+    catch (err) { setError(err instanceof Error ? err.message : 'Failed to accept match') }
     finally { setUpdating(false) }
   }
 
   const onReject = async () => {
     setUpdating(true); setError('')
     try { const u = await rejectMatch(matchId); setMatch(u); localStorage.setItem(storageKey, JSON.stringify(u)) }
-    catch { updateLocal('REJECTED') }
+    catch (err) { setError(err instanceof Error ? err.message : 'Failed to reject match') }
     finally { setUpdating(false) }
   }
 
   if (loading) return <div className="loading" data-cy="match-detail-loading"><div className="spinner" />Loading match...</div>
-  if (!match) return <div className="empty-state" data-cy="match-detail-not-found">Match not found.</div>
+  if (!match) return <div className="empty-state" data-cy="match-detail-not-found">{error || 'Match not found.'}</div>
 
   const isPending = match.status === 'PENDING'
   const score = Math.round(match.compatibilityScore * 100)
@@ -101,6 +95,28 @@ export default function MatchDetail({ matchId, userStorageKey, onBack }: Props) 
           {match.matchedUserBio && <div className="match-user-bio">"{match.matchedUserBio}"</div>}
           <div className="match-score-badge">{score}% ★ taste match</div>
         </div>
+
+        {match.status === 'ACCEPTED' && (
+          <div className="match-contact-box" data-cy="match-contact-box">
+            <div className="match-contact-title">You accepted — waiting for {match.matchedUserName}</div>
+            <div className="match-contact-hint">Contact details will appear once they accept too.</div>
+          </div>
+        )}
+
+        {match.status === 'CONFIRMED' && (
+          <div className="match-contact-box" data-cy="match-contact-box">
+            <div className="match-contact-title">You're both going!</div>
+            {match.matchedUserContactLink ? (
+              <div className="match-contact-link">
+                Contact <strong>{match.matchedUserName}</strong> at: <span className="match-contact-value">{match.matchedUserContactLink}</span>
+              </div>
+            ) : (
+              <div className="match-contact-hint">
+                {match.matchedUserName} hasn't set a contact link yet — look for them at the event!
+              </div>
+            )}
+          </div>
+        )}
 
         {error && <div className="error-message" data-cy="match-detail-error">{error}</div>}
 
