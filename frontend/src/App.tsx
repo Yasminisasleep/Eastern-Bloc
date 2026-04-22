@@ -20,7 +20,7 @@ function App() {
   const [activeView, setActiveView] = useState<MainView>('events')
   const { isAuthenticated, user, token, logout } = useAuth()
 
-  const userId = 1
+  const userId = user?.id
   const userStorageKey = user?.email || 'anonymous'
 
   useEffect(() => {
@@ -40,6 +40,9 @@ function App() {
   }
 
   const renderContent = () => {
+    if (!userId) {
+      return <div className="empty-state">Loading your profile...</div>
+    }
     if (activeView === 'preferences') {
       return <Preferences userId={userId} userStorageKey={userStorageKey} />
     }

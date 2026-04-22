@@ -2,9 +2,9 @@ import { createContext, useContext, useState, useEffect, ReactNode } from 'react
 
 interface AuthContextType {
   isAuthenticated: boolean
-  user: { email: string; displayName: string } | null
+  user: { id: number; email: string; displayName: string } | null
   token: string | null
-  login: (token: string, email: string, displayName: string) => void
+  login: (token: string, id: number, email: string, displayName: string) => void
   logout: () => void
 }
 
@@ -12,7 +12,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
-  const [user, setUser] = useState<{ email: string; displayName: string } | null>(null)
+  const [user, setUser] = useState<{ id: number; email: string; displayName: string } | null>(null)
   const [token, setToken] = useState<string | null>(null)
 
   useEffect(() => {
@@ -26,12 +26,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [])
 
-  const login = (newToken: string, email: string, displayName: string) => {
+  const login = (newToken: string, id: number, email: string, displayName: string) => {
     setToken(newToken)
-    setUser({ email, displayName })
+    setUser({ id, email, displayName })
     setIsAuthenticated(true)
     localStorage.setItem('authToken', newToken)
-    localStorage.setItem('authUser', JSON.stringify({ email, displayName }))
+    localStorage.setItem('authUser', JSON.stringify({ id, email, displayName }))
   }
 
   const logout = () => {

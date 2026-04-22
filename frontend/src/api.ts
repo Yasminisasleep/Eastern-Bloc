@@ -25,6 +25,7 @@ export interface PageResponse<T> {
 }
 
 export interface AuthResponse {
+  id: number
   token: string
   type: string
   email: string
@@ -78,6 +79,7 @@ export interface MatchDetail extends MatchSummary {
   matchedUserBio?: string
   matchedUserCity?: string
   matchedUserTags?: string[]
+  matchedUserContactLink?: string | null
 }
 
 let authToken: string | null = null
@@ -230,4 +232,26 @@ export async function rejectMatch(matchId: number): Promise<MatchDetail> {
   })
   if (!res.ok) throw new Error(`Failed to reject match (${res.status})`)
   return res.json()
+}
+
+export async function fetchContactLink(userId: number): Promise<string> {
+  try {
+    const res = await fetch(`${API_URL}/users/${userId}/contact`, {
+      headers: getHeaders(true),
+    })
+    if (!res.ok) return ''
+    const data = await res.json()
+    return data.contactLink || ''
+  } catch {
+    return ''
+  }
+}
+
+export async function updateContactLink(userId: number, contactLink: string): Promise<void> {
+  const res = await fetch(`${API_URL}/users/${userId}/contact`, {
+    method: 'PUT',
+    headers: getHeaders(true),
+    body: JSON.stringify({ contactLink }),
+  })
+  if (!res.ok) throw new Error(`Failed to update contact link (${res.status})`)
 }

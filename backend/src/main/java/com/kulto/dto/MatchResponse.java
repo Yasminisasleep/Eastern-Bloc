@@ -20,4 +20,5 @@ public class MatchResponse {
     private String matchedUserBio;
     private String matchedUserCity;
     private List<String> matchedUserTags;
+    private String matchedUserContactLink;
 }

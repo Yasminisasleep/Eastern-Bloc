@@ -46,7 +46,7 @@ class PreferenceControllerTest {
     }
 
     @Test
-    @WithMockUser
+    @WithMockUser(username = "pref@test.com")
     void savePreferences_validRequest_returnsOk() throws Exception {
         PreferenceRequest request = new PreferenceRequest();
         request.setPreferredCategories(List.of("CINEMA", "CONCERT"));
@@ -62,7 +62,7 @@ class PreferenceControllerTest {
     }
 
     @Test
-    @WithMockUser
+    @WithMockUser(username = "pref@test.com")
     void getPreferences_afterSave_returnsPreferences() throws Exception {
         Preference pref = Preference.builder()
                 .user(testUser)
@@ -79,7 +79,7 @@ class PreferenceControllerTest {
     }
 
     @Test
-    @WithMockUser
+    @WithMockUser(username = "pref@test.com")
     void getPreferences_noPreferences_returns404() throws Exception {
         mockMvc.perform(get("/api/users/" + testUser.getId() + "/preferences"))
                 .andExpect(status().isNotFound());

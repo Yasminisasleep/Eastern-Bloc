@@ -12,8 +12,9 @@ class AuthResponseTest {
         String email = "test@example.com";
         String displayName = "John Doe";
 
-        AuthResponse response = new AuthResponse(token, email, displayName);
+        AuthResponse response = new AuthResponse(1L, token, email, displayName);
 
+        assertEquals(1L, response.getId());
         assertEquals(token, response.getToken());
         assertEquals(email, response.getEmail());
         assertEquals(displayName, response.getDisplayName());

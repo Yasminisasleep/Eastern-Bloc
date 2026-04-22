@@ -40,6 +40,12 @@ public class Match {
     @Builder.Default
     private MatchStatus status = MatchStatus.PENDING;
 
+    @Builder.Default
+    private boolean userOneAccepted = false;
+
+    @Builder.Default
+    private boolean userTwoAccepted = false;
+
     @Column(nullable = false, updatable = false)
     @Builder.Default
     private LocalDateTime createdAt = LocalDateTime.now();

@@ -1,5 +1,5 @@
 import { FormEvent, useEffect, useMemo, useState } from 'react'
-import { PreferencesPayload, fetchUserPreferences, saveUserPreferences } from './api'
+import { PreferencesPayload, fetchUserPreferences, saveUserPreferences, fetchContactLink, updateContactLink } from './api'
 
 interface Props {
   userId: number
@@ -32,6 +32,9 @@ export default function Preferences({ userId, userStorageKey }: Props) {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const [successMessage, setSuccessMessage] = useState('')
+  const [contactLink, setContactLink] = useState('')
+  const [savingContact, setSavingContact] = useState(false)
+  const [contactSuccess, setContactSuccess] = useState('')
 
   const storageKey = useMemo(() => getStorageKey(userStorageKey), [userStorageKey])
 
@@ -60,6 +63,7 @@ export default function Preferences({ userId, userStorageKey }: Props) {
     }
 
     loadPreferences()
+    fetchContactLink(userId).then(link => { if (isMounted) setContactLink(link) })
 
     return () => {
       isMounted = false
@@ -105,6 +109,19 @@ export default function Preferences({ userId, userStorageKey }: Props) {
       setSuccessMessage('Preferences saved locally (backend not ready yet).')
     } finally {
       setSaving(false)
+    }
+  }
+
+  const handleSaveContact = async () => {
+    setSavingContact(true)
+    setContactSuccess('')
+    try {
+      await updateContactLink(userId, contactLink)
+      setContactSuccess('Contact link saved.')
+    } catch {
+      setContactSuccess('Saved locally (backend not ready yet).')
+    } finally {
+      setSavingContact(false)
     }
   }
 
@@ -178,6 +195,24 @@ export default function Preferences({ userId, userStorageKey }: Props) {
           </button>
         </div>
       </form>
+
+      <div className="form-group" style={{ marginTop: '24px', paddingTop: '24px', borderTop: '1px solid var(--border)' }}>
+        <h3 style={{ fontSize: '15px', fontWeight: 600, marginBottom: '4px' }}>Contact link</h3>
+        <p className="panel-subtitle" style={{ marginBottom: '12px' }}>Shared with your match once both accept. Use a Telegram handle, Instagram, WhatsApp number, etc.</p>
+        <input
+          type="text"
+          data-cy="contact-link-input"
+          value={contactLink}
+          onChange={e => setContactLink(e.target.value)}
+          placeholder="e.g. @you on Telegram, instagram.com/you"
+        />
+        {contactSuccess && <div className="success-message" data-cy="contact-link-success">{contactSuccess}</div>}
+        <div className="form-actions">
+          <button type="button" data-cy="contact-link-save" onClick={handleSaveContact} disabled={savingContact}>
+            {savingContact ? 'Saving...' : 'Save contact link'}
+          </button>
+        </div>
+      </div>
     </div>
   )
 }

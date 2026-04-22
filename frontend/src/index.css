@@ -1262,6 +1262,37 @@ label {
   overflow: hidden;
 }
 
+.match-contact-box {
+  background: var(--accent-light);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius);
+  padding: var(--space-md);
+  margin-top: var(--space-md);
+  text-align: center;
+}
+
+.match-contact-title {
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--accent);
+  margin-bottom: 6px;
+}
+
+.match-contact-link {
+  font-size: 14px;
+  color: var(--text-primary);
+}
+
+.match-contact-value {
+  color: var(--accent);
+  word-break: break-all;
+}
+
+.match-contact-hint {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
 .match-actions {
   display: flex;
   gap: var(--space-md);

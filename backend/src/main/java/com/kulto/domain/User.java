@@ -34,6 +34,8 @@ public class User {
 
     private String photoUrl;
 
+    private String contactLink;
+
     @Column(nullable = false)
     @Builder.Default
     private String role = "USER";

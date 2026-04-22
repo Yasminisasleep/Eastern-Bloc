@@ -6,6 +6,7 @@ import com.kulto.domain.User;
 import com.kulto.dto.PreferenceRequest;
 import com.kulto.dto.PreferenceResponse;
 import com.kulto.exception.ResourceNotFoundException;
+import com.kulto.repository.MatchRepository;
 import com.kulto.repository.PreferenceRepository;
 import com.kulto.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +25,7 @@ public class PreferenceService {
 
     private final PreferenceRepository preferenceRepository;
     private final UserRepository userRepository;
+    private final MatchRepository matchRepository;
     private final KafkaTemplate<String, String> kafkaTemplate;
 
     public PreferenceResponse getPreferences(Long userId) {
@@ -48,6 +50,11 @@ public class PreferenceService {
         pref.setGeographicRadiusKm(request.getGeographicRadiusKm());
 
         preferenceRepository.save(pref);
+
+        int cancelled = matchRepository.cancelPendingMatchesForUser(userId);
+        if (cancelled > 0) {
+            log.info("Cancelled {} pending matches for user {} after preference change", cancelled, userId);
+        }
 
         try {
             String payload = "{\"userId\":" + userId + "}";

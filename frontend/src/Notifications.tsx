@@ -18,6 +18,17 @@ const ICONS: Record<string, string> = {
 
 function getStorageKey(k: string) { return `kulto.notifications.${k}` }
 
+function dedupeByMatch(items: NotificationItem[]): NotificationItem[] {
+  const byMatch = new Map<number, NotificationItem>()
+  for (const n of items) {
+    const existing = byMatch.get(n.match.id)
+    if (!existing || new Date(n.createdAt).getTime() > new Date(existing.createdAt).getTime()) {
+      byMatch.set(n.match.id, n)
+    }
+  }
+  return Array.from(byMatch.values()).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+}
+
 export default function Notifications({ userId, userStorageKey, onOpenMatch }: Props) {
   const [notifications, setNotifications] = useState<NotificationItem[]>([])
   const [loading, setLoading] = useState(true)
@@ -27,10 +38,10 @@ export default function Notifications({ userId, userStorageKey, onOpenMatch }: P
     let mounted = true
     setLoading(true)
     fetchUserNotifications(userId)
-      .then(data => { if (mounted) { setNotifications(data); localStorage.setItem(storageKey, JSON.stringify(data)) } })
+      .then(data => { if (mounted) { const deduped = dedupeByMatch(data); setNotifications(deduped); localStorage.setItem(storageKey, JSON.stringify(deduped)) } })
       .catch(() => {
         const local = localStorage.getItem(storageKey)
-        if (mounted) setNotifications(local ? JSON.parse(local) : MOCK_NOTIFICATIONS)
+        if (mounted) setNotifications(local ? dedupeByMatch(JSON.parse(local)) : MOCK_NOTIFICATIONS)
       })
       .finally(() => { if (mounted) setLoading(false) })
     return () => { mounted = false }

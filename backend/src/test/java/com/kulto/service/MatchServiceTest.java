@@ -25,6 +25,7 @@ class MatchServiceTest {
 
     @Mock private MatchRepository matchRepository;
     @Mock private PreferenceRepository preferenceRepository;
+    @Mock private NotificationService notificationService;
 
     private MatchService matchService;
 
@@ -35,7 +36,7 @@ class MatchServiceTest {
 
     @BeforeEach
     void setUp() {
-        matchService = new MatchService(matchRepository, preferenceRepository);
+        matchService = new MatchService(matchRepository, preferenceRepository, notificationService);
 
         user1 = User.builder().id(1L).email("u1@test.com").displayName("Alice").passwordHash("h").city("Paris").bio("Hello").build();
         user2 = User.builder().id(2L).email("u2@test.com").displayName("Bob").passwordHash("h").city("Lyon").build();
@@ -91,7 +92,7 @@ class MatchServiceTest {
     }
 
     @Test
-    void acceptMatch_pendingMatch_changesStatusToAccepted() {
+    void acceptMatch_oneSide_returnsAcceptedStatus() {
         when(matchRepository.findById(1L)).thenReturn(Optional.of(pendingMatch));
         when(matchRepository.save(any(Match.class))).thenAnswer(inv -> inv.getArgument(0));
         when(preferenceRepository.findByUserId(2L)).thenReturn(Optional.empty());
@@ -100,6 +101,20 @@ class MatchServiceTest {
 
         assertEquals("ACCEPTED", response.getStatus());
         verify(matchRepository).save(any(Match.class));
+        verify(notificationService, never()).createMatchAcceptedNotification(any());
+    }
+
+    @Test
+    void acceptMatch_bothSides_returnsConfirmedAndNotifies() {
+        pendingMatch.setUserOneAccepted(true);
+        when(matchRepository.findById(1L)).thenReturn(Optional.of(pendingMatch));
+        when(matchRepository.save(any(Match.class))).thenAnswer(inv -> inv.getArgument(0));
+        when(preferenceRepository.findByUserId(1L)).thenReturn(Optional.empty());
+
+        MatchResponse response = matchService.acceptMatch(1L, 2L);
+
+        assertEquals("CONFIRMED", response.getStatus());
+        verify(notificationService).createMatchAcceptedNotification(any());
     }
 
     @Test

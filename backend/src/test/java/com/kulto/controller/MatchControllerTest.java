@@ -57,7 +57,7 @@ class MatchControllerTest {
     }
 
     @Test
-    @WithMockUser
+    @WithMockUser(username = "m1@test.com")
     void getMatch_returnsMatchDetail() throws Exception {
         mockMvc.perform(get("/api/matches/" + match.getId()).param("userId", user1.getId().toString()))
                 .andExpect(status().isOk())
@@ -67,14 +67,14 @@ class MatchControllerTest {
     }
 
     @Test
-    @WithMockUser
+    @WithMockUser(username = "m1@test.com")
     void getMatch_notFound_returns404() throws Exception {
         mockMvc.perform(get("/api/matches/9999").param("userId", "1"))
                 .andExpect(status().isNotFound());
     }
 
     @Test
-    @WithMockUser
+    @WithMockUser(username = "m1@test.com")
     void acceptMatch_changesStatus() throws Exception {
         mockMvc.perform(put("/api/matches/" + match.getId() + "/accept")
                         .param("userId", user1.getId().toString()))
@@ -83,7 +83,7 @@ class MatchControllerTest {
     }
 
     @Test
-    @WithMockUser
+    @WithMockUser(username = "m1@test.com")
     void rejectMatch_changesStatus() throws Exception {
         mockMvc.perform(put("/api/matches/" + match.getId() + "/reject")
                         .param("userId", user1.getId().toString()))
