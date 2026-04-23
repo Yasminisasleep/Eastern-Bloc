@@ -28,15 +28,16 @@ public class DataSeeder {
                 return;
             }
 
-            List<Event> ticketmasterEvents = ticketmasterService.fetchEventsFromTicketmaster("Paris", 20);
+            List<Event> ticketmasterEvents = ticketmasterService.fetchEventsFromTicketmaster("Paris", 50);
+            List<Event> seedEvents = getFallbackEvents();
 
-            if (!ticketmasterEvents.isEmpty()) {
-                log.info("Seeding {} events from Ticketmaster", ticketmasterEvents.size());
-                eventRepository.saveAll(ticketmasterEvents);
-            } else {
-                log.info("No Ticketmaster events found, using fallback seed data");
-                eventRepository.saveAll(getFallbackEvents());
-            }
+            List<Event> combined = new java.util.ArrayList<>();
+            combined.addAll(ticketmasterEvents);
+            combined.addAll(seedEvents);
+
+            log.info("Seeding {} events ({} from Ticketmaster, {} curated)",
+                    combined.size(), ticketmasterEvents.size(), seedEvents.size());
+            eventRepository.saveAll(combined);
         };
     }
 
