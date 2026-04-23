@@ -18,7 +18,25 @@ const DEFAULT_PREFERENCES: PreferencesPayload = {
   preferredCategories: ['CINEMA', 'THEATRE'],
   interestTags: ['indie', 'comedy'],
   geographicRadiusKm: 15,
+  age: null,
+  gender: null,
+  preferredGenders: [],
+  preferredAgeMin: 18,
+  preferredAgeMax: 45,
 }
+
+const GENDER_OPTIONS: { value: string; label: string }[] = [
+  { value: 'FEMALE', label: 'Woman' },
+  { value: 'MALE', label: 'Man' },
+  { value: 'OTHER', label: 'Non-binary / Other' },
+  { value: 'PREFER_NOT_TO_SAY', label: 'Prefer not to say' },
+]
+
+const PREFERRED_GENDER_OPTIONS: { value: string; label: string }[] = [
+  { value: 'FEMALE', label: 'Women' },
+  { value: 'MALE', label: 'Men' },
+  { value: 'OTHER', label: 'Non-binary people' },
+]
 
 function getStorageKey(userStorageKey: string): string {
   return `kulto.preferences.${userStorageKey}`
@@ -28,6 +46,11 @@ export default function Preferences({ userId, userStorageKey }: Props) {
   const [selectedCategories, setSelectedCategories] = useState<string[]>([])
   const [tagsInput, setTagsInput] = useState('')
   const [radius, setRadius] = useState(15)
+  const [age, setAge] = useState<string>('')
+  const [gender, setGender] = useState<string>('')
+  const [preferredGenders, setPreferredGenders] = useState<string[]>([])
+  const [ageMin, setAgeMin] = useState<number>(18)
+  const [ageMax, setAgeMax] = useState<number>(45)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
@@ -50,6 +73,11 @@ export default function Preferences({ userId, userStorageKey }: Props) {
         setSelectedCategories(prefs.preferredCategories || [])
         setTagsInput((prefs.interestTags || []).join(', '))
         setRadius(prefs.geographicRadiusKm || 15)
+        setAge(prefs.age != null ? String(prefs.age) : '')
+        setGender(prefs.gender || '')
+        setPreferredGenders(prefs.preferredGenders || [])
+        setAgeMin(prefs.preferredAgeMin ?? 18)
+        setAgeMax(prefs.preferredAgeMax ?? 45)
       } catch {
         const localValue = localStorage.getItem(storageKey)
         const fallback = localValue ? (JSON.parse(localValue) as PreferencesPayload) : DEFAULT_PREFERENCES
@@ -57,6 +85,11 @@ export default function Preferences({ userId, userStorageKey }: Props) {
         setSelectedCategories(fallback.preferredCategories)
         setTagsInput(fallback.interestTags.join(', '))
         setRadius(fallback.geographicRadiusKm)
+        setAge(fallback.age != null ? String(fallback.age) : '')
+        setGender(fallback.gender || '')
+        setPreferredGenders(fallback.preferredGenders || [])
+        setAgeMin(fallback.preferredAgeMin ?? 18)
+        setAgeMax(fallback.preferredAgeMax ?? 45)
       } finally {
         if (isMounted) setLoading(false)
       }
@@ -97,6 +130,11 @@ export default function Preferences({ userId, userStorageKey }: Props) {
       preferredCategories: selectedCategories,
       interestTags: parsedTags,
       geographicRadiusKm: radius,
+      age: age ? Number(age) : null,
+      gender: gender || null,
+      preferredGenders,
+      preferredAgeMin: ageMin,
+      preferredAgeMax: ageMax,
     }
 
     setSaving(true)
@@ -184,6 +222,95 @@ export default function Preferences({ userId, userStorageKey }: Props) {
             value={radius}
             onChange={e => setRadius(Number(e.target.value))}
           />
+        </div>
+
+        <div className="prefs-section-header">About you</div>
+
+        <div className="form-row">
+          <div className="form-group">
+            <label htmlFor="age">Your age</label>
+            <input
+              id="age"
+              type="number"
+              data-cy="preferences-age"
+              min={16}
+              max={99}
+              value={age}
+              onChange={e => setAge(e.target.value)}
+              placeholder="e.g. 27"
+            />
+          </div>
+          <div className="form-group">
+            <label htmlFor="gender">You are</label>
+            <select
+              id="gender"
+              data-cy="preferences-gender"
+              value={gender}
+              onChange={e => setGender(e.target.value)}
+            >
+              <option value="">Select...</option>
+              {GENDER_OPTIONS.map(opt => (
+                <option key={opt.value} value={opt.value}>{opt.label}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        <div className="prefs-section-header">Who you want to meet</div>
+
+        <div className="form-group">
+          <label>Open to meet</label>
+          <div className="chip-grid">
+            {PREFERRED_GENDER_OPTIONS.map(opt => {
+              const active = preferredGenders.includes(opt.value)
+              return (
+                <button
+                  key={opt.value}
+                  type="button"
+                  className={`chip ${active ? 'chip-active' : ''}`}
+                  onClick={() =>
+                    setPreferredGenders(current =>
+                      current.includes(opt.value)
+                        ? current.filter(v => v !== opt.value)
+                        : [...current, opt.value],
+                    )
+                  }
+                >
+                  {opt.label}
+                </button>
+              )
+            })}
+          </div>
+          <small className="field-help">Leave all unselected to meet anyone.</small>
+        </div>
+
+        <div className="form-group">
+          <label>Age range: {ageMin} – {ageMax}</label>
+          <div className="age-range-inputs">
+            <input
+              type="number"
+              min={16}
+              max={99}
+              value={ageMin}
+              onChange={e => {
+                const v = Number(e.target.value)
+                setAgeMin(v)
+                if (v > ageMax) setAgeMax(v)
+              }}
+            />
+            <span className="age-range-sep">to</span>
+            <input
+              type="number"
+              min={16}
+              max={99}
+              value={ageMax}
+              onChange={e => {
+                const v = Number(e.target.value)
+                setAgeMax(v)
+                if (v < ageMin) setAgeMin(v)
+              }}
+            />
+          </div>
         </div>
 
         {error && <div className="error-message" data-cy="preferences-error">{error}</div>}

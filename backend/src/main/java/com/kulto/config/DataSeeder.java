@@ -51,6 +51,7 @@ public class DataSeeder {
                         .venue("MK2 Bibliotheque")
                         .city("Paris")
                         .tags(List.of("sci-fi", "blockbuster"))
+                        .imageUrl("https://images.unsplash.com/photo-1485846234645-a62644f84728?w=1200&q=80&auto=format&fit=crop")
                         .source("seed")
                         .build(),
                 Event.builder()
@@ -61,6 +62,7 @@ public class DataSeeder {
                         .venue("Accor Arena")
                         .city("Paris")
                         .tags(List.of("trip-hop", "electronic"))
+                        .imageUrl("https://images.unsplash.com/photo-1501386761578-eac5c94b800a?w=1200&q=80&auto=format&fit=crop")
                         .source("seed")
                         .build(),
                 Event.builder()
@@ -71,6 +73,7 @@ public class DataSeeder {
                         .venue("Fondation Louis Vuitton")
                         .city("Paris")
                         .tags(List.of("contemporary-art", "painting"))
+                        .imageUrl("https://images.unsplash.com/photo-1577083552431-6e5fd01988ec?w=1200&q=80&auto=format&fit=crop")
                         .source("seed")
                         .build(),
                 Event.builder()
@@ -81,6 +84,7 @@ public class DataSeeder {
                         .venue("Theatre de la Ville")
                         .city("Paris")
                         .tags(List.of("classic", "drama"))
+                        .imageUrl("https://images.unsplash.com/photo-1503095396549-807759245b35?w=1200&q=80&auto=format&fit=crop")
                         .source("seed")
                         .build(),
                 Event.builder()
@@ -91,6 +95,7 @@ public class DataSeeder {
                         .venue("Bois de Vincennes")
                         .city("Paris")
                         .tags(List.of("festival", "electronic", "indie"))
+                        .imageUrl("https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?w=1200&q=80&auto=format&fit=crop")
                         .source("seed")
                         .build(),
                 Event.builder()
@@ -101,6 +106,7 @@ public class DataSeeder {
                         .venue("Stade de France")
                         .city("Saint-Denis")
                         .tags(List.of("hip-hop", "rap"))
+                        .imageUrl("https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=1200&q=80&auto=format&fit=crop")
                         .source("seed")
                         .build()
         );

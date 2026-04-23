@@ -44,10 +44,20 @@ export interface PreferencesPayload {
   preferredCategories: string[]
   interestTags: string[]
   geographicRadiusKm: number
+  age?: number | null
+  gender?: string | null
+  preferredGenders?: string[]
+  preferredAgeMin?: number | null
+  preferredAgeMax?: number | null
 }
 
 export interface UserPreferences extends PreferencesPayload {
   updatedAt?: string
+}
+
+export interface EventInterestStatus {
+  interested: boolean
+  count: number
 }
 
 export interface MatchEvent {
@@ -57,6 +67,7 @@ export interface MatchEvent {
   date: string
   city: string
   venue: string
+  imageUrl?: string | null
 }
 
 export interface MatchSummary {
@@ -254,4 +265,30 @@ export async function updateContactLink(userId: number, contactLink: string): Pr
     body: JSON.stringify({ contactLink }),
   })
   if (!res.ok) throw new Error(`Failed to update contact link (${res.status})`)
+}
+
+export async function fetchEventInterest(eventId: number): Promise<EventInterestStatus> {
+  const res = await fetch(`${API_URL}/events/${eventId}/interest`, {
+    headers: getHeaders(true),
+  })
+  if (!res.ok) throw new Error(`Failed to fetch interest (${res.status})`)
+  return res.json()
+}
+
+export async function addEventInterest(eventId: number): Promise<EventInterestStatus> {
+  const res = await fetch(`${API_URL}/events/${eventId}/interest`, {
+    method: 'POST',
+    headers: getHeaders(true),
+  })
+  if (!res.ok) throw new Error(`Failed to record interest (${res.status})`)
+  return res.json()
+}
+
+export async function removeEventInterest(eventId: number): Promise<EventInterestStatus> {
+  const res = await fetch(`${API_URL}/events/${eventId}/interest`, {
+    method: 'DELETE',
+    headers: getHeaders(true),
+  })
+  if (!res.ok) throw new Error(`Failed to remove interest (${res.status})`)
+  return res.json()
 }

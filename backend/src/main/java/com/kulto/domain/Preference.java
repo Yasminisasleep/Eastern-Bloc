@@ -36,6 +36,16 @@ public class Preference {
     @Column(name = "tag")
     private List<String> interestTags;
 
+    @ElementCollection
+    @CollectionTable(name = "preference_genders", joinColumns = @JoinColumn(name = "preference_id"))
+    @Column(name = "gender")
+    @Enumerated(EnumType.STRING)
+    private List<Gender> preferredGenders;
+
+    private Integer preferredAgeMin;
+
+    private Integer preferredAgeMax;
+
     @Column(nullable = false)
     @Builder.Default
     private Integer geographicRadiusKm = 50;

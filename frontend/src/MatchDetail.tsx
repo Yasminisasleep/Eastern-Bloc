@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { MatchDetail as MatchDetailModel, acceptMatch, fetchMatchDetail, rejectMatch } from './api'
+import { ArrowLeftIcon, CheckIcon, XIcon, SparklesIcon, EventCover } from './Icons'
 
 interface Props {
   matchId: number
@@ -7,12 +8,11 @@ interface Props {
   onBack: () => void
 }
 
-const ICONS: Record<string, string> = { CINEMA: '🎬', CONCERT: '🎵', EXHIBITION: '🖼️', THEATRE: '🎭', FESTIVAL: '🎪', DEFAULT: '🎨' }
 const CATEGORY_LABELS: Record<string, string> = { CINEMA: 'Cinema', CONCERT: 'Concert', EXHIBITION: 'Exhibition', THEATRE: 'Theatre', FESTIVAL: 'Festival' }
 const STATUS_LABELS: Record<string, string> = { PENDING: 'Pending', ACCEPTED: 'Waiting for other', REJECTED: 'Rejected', CONFIRMED: 'Confirmed', CANCELLED: 'Cancelled' }
 
-function getStorageKey(k: string, id: number) { return `kulto.match.${k}.${id}` }
-function getInitials(name: string) { return name.split(' ').map(p => p[0] ?? '').join('').toUpperCase().slice(0, 2) }
+const getStorageKey = (k: string, id: number) => `kulto.match.${k}.${id}`
+const getInitials = (name: string) => name.split(' ').map(p => p[0] ?? '').join('').toUpperCase().slice(0, 2)
 
 export default function MatchDetail({ matchId, userStorageKey, onBack }: Props) {
   const [match, setMatch] = useState<MatchDetailModel | null>(null)
@@ -45,7 +45,7 @@ export default function MatchDetail({ matchId, userStorageKey, onBack }: Props) 
     finally { setUpdating(false) }
   }
 
-  if (loading) return <div className="loading" data-cy="match-detail-loading"><div className="spinner" />Loading match...</div>
+  if (loading) return <div className="loading" data-cy="match-detail-loading"><div className="spinner" />Loading match…</div>
   if (!match) return <div className="empty-state" data-cy="match-detail-not-found">{error || 'Match not found.'}</div>
 
   const isPending = match.status === 'PENDING'
@@ -54,14 +54,19 @@ export default function MatchDetail({ matchId, userStorageKey, onBack }: Props) 
   return (
     <div data-cy="match-detail-view">
       <div className="event-detail-nav">
-        <button className="event-detail-back-btn back-button" data-cy="match-detail-back" onClick={onBack}>← Back</button>
-        <span style={{ fontSize: '16px', fontWeight: 600 }}>Match</span>
-        <span style={{ width: '48px' }} />
+        <button className="icon-btn back-button" data-cy="match-detail-back" onClick={onBack} aria-label="Back">
+          <ArrowLeftIcon size={22} />
+        </button>
+        <span className="event-detail-nav-title">Match</span>
+        <span style={{ width: '40px' }} />
       </div>
 
       <div className="match-proposal">
-        <div className="match-proposal-heading">You have a match!</div>
-        <div className="match-proposal-subheading">For an event you wanted to go to</div>
+        <div className="match-proposal-heading">
+          <SparklesIcon size={22} />
+          <span>It's a match!</span>
+        </div>
+        <div className="match-proposal-subheading">Someone wants to go to the same event.</div>
 
         {!isPending && (
           <div className="match-status-row">
@@ -71,7 +76,12 @@ export default function MatchDetail({ matchId, userStorageKey, onBack }: Props) 
         )}
 
         <div className="match-event-compact">
-          <div className="match-event-compact-image">{ICONS[match.event.category] ?? ICONS.DEFAULT}</div>
+          <EventCover
+            className="match-event-compact-image"
+            imageUrl={match.event.imageUrl ?? null}
+            category={match.event.category}
+            iconSize={40}
+          />
           <div className="match-event-compact-info">
             <div className="match-event-compact-meta">{CATEGORY_LABELS[match.event.category] ?? match.event.category} · {new Date(match.event.date).toLocaleDateString('en-GB', { weekday: 'short', month: 'short', day: 'numeric' })}</div>
             <div className="match-event-compact-title">{match.event.title}</div>
@@ -86,14 +96,14 @@ export default function MatchDetail({ matchId, userStorageKey, onBack }: Props) 
             <div className="match-avatar">{getInitials(match.matchedUserName)}</div>
             <div>
               <div className="match-user-name">{match.matchedUserName}</div>
-              {match.matchedUserCity && <div style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>{match.matchedUserCity}</div>}
+              {match.matchedUserCity && <div className="match-user-city">{match.matchedUserCity}</div>}
             </div>
           </div>
           {match.matchedUserTags && match.matchedUserTags.length > 0 && (
             <div className="match-user-tags">{match.matchedUserTags.map(t => <span key={t} className="tag">{t}</span>)}</div>
           )}
           {match.matchedUserBio && <div className="match-user-bio">"{match.matchedUserBio}"</div>}
-          <div className="match-score-badge">{score}% ★ taste match</div>
+          <div className="match-score-badge"><SparklesIcon size={14} /><span>{score}% taste match</span></div>
         </div>
 
         {match.status === 'ACCEPTED' && (
@@ -122,10 +132,12 @@ export default function MatchDetail({ matchId, userStorageKey, onBack }: Props) 
 
         <div className="match-actions">
           <button type="button" className="btn-secondary" data-cy="match-reject" onClick={onReject} disabled={updating || match.status === 'REJECTED' || match.status === 'CANCELLED'}>
-            {updating ? 'Updating...' : '✕ Pass'}
+            <XIcon size={18} />
+            <span>{updating ? 'Updating…' : 'Pass'}</span>
           </button>
           <button type="button" className="btn-primary" data-cy="match-accept" onClick={onAccept} disabled={updating || match.status === 'ACCEPTED' || match.status === 'CONFIRMED'}>
-            {updating ? 'Updating...' : '✓ Accept'}
+            <CheckIcon size={18} />
+            <span>{updating ? 'Updating…' : 'Accept'}</span>
           </button>
         </div>
         {isPending && <div className="match-expiry">Match expires in 47h 59m</div>}

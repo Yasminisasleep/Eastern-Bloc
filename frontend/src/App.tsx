@@ -9,6 +9,7 @@ import Landing from './Landing'
 import Preferences from './Preferences'
 import Notifications from './Notifications'
 import MatchDetail from './MatchDetail'
+import { CompassIcon, HeartIcon, UserIcon } from './Icons'
 
 type MainView = 'events' | 'preferences' | 'notifications' | 'match-detail'
 
@@ -41,7 +42,7 @@ function App() {
 
   const renderContent = () => {
     if (!userId) {
-      return <div className="empty-state">Loading your profile...</div>
+      return <div className="empty-state">Loading your profile…</div>
     }
     if (activeView === 'preferences') {
       return <Preferences userId={userId} userStorageKey={userStorageKey} />
@@ -114,8 +115,8 @@ function App() {
             data-cy="tab-events"
             onClick={() => { setActiveView('events'); setSelectedEventId(null) }}
           >
-            <span className="bottom-nav-icon">🎭</span>
-            Discover
+            <CompassIcon size={22} />
+            <span>Discover</span>
           </button>
           <button
             type="button"
@@ -123,8 +124,8 @@ function App() {
             data-cy="tab-notifications"
             onClick={() => setActiveView('notifications')}
           >
-            <span className="bottom-nav-icon">♥</span>
-            Outings
+            <HeartIcon size={22} filled={isOutingsActive} />
+            <span>Outings</span>
           </button>
           <button
             type="button"
@@ -132,8 +133,8 @@ function App() {
             data-cy="tab-preferences"
             onClick={() => setActiveView('preferences')}
           >
-            <span className="bottom-nav-icon">👤</span>
-            Me
+            <UserIcon size={22} />
+            <span>Me</span>
           </button>
         </nav>
       </div>

@@ -14,7 +14,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
-
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -46,6 +45,12 @@ public class MatchingService {
             if (otherPrefOpt.isEmpty()) continue;
 
             Preference otherPref = otherPrefOpt.get();
+
+            // Demographic gate
+            if (!demographicsCompatible(userPref.getUser(), userPref, otherUser, otherPref)) {
+                continue;
+            }
+
             double score = computeCompatibility(userPref, otherPref);
 
             if (score >= 0.2) {
@@ -76,8 +81,8 @@ public class MatchingService {
     }
 
     double computeCompatibility(Preference a, Preference b) {
-        Set<String> tagsA = new HashSet<>(a.getInterestTags());
-        Set<String> tagsB = new HashSet<>(b.getInterestTags());
+        Set<String> tagsA = new HashSet<>(a.getInterestTags() == null ? Set.of() : a.getInterestTags());
+        Set<String> tagsB = new HashSet<>(b.getInterestTags() == null ? Set.of() : b.getInterestTags());
 
         Set<String> categoriesA = a.getPreferredCategories().stream()
                 .map(Enum::name)
@@ -102,6 +107,34 @@ public class MatchingService {
         double categoryScore = allCategories.isEmpty() ? 0 : (double) sharedCategories.size() / allCategories.size();
 
         return 0.6 * tagScore + 0.4 * categoryScore;
+    }
+
+    /**
+     * Mutual demographic compatibility:
+     *  - A's preferred genders must include B's gender (or A has no filter)
+     *  - B's preferred genders must include A's gender (or B has no filter)
+     *  - B's age falls in A's preferred [min, max] range (if A set a range)
+     *  - vice versa
+     */
+    public boolean demographicsCompatible(User a, Preference prefA, User b, Preference prefB) {
+        if (!genderAllowed(prefA.getPreferredGenders(), b.getGender())) return false;
+        if (!genderAllowed(prefB.getPreferredGenders(), a.getGender())) return false;
+        if (!ageInRange(prefA.getPreferredAgeMin(), prefA.getPreferredAgeMax(), b.getAge())) return false;
+        if (!ageInRange(prefB.getPreferredAgeMin(), prefB.getPreferredAgeMax(), a.getAge())) return false;
+        return true;
+    }
+
+    private boolean genderAllowed(List<Gender> preferred, Gender candidate) {
+        if (preferred == null || preferred.isEmpty()) return true;
+        if (candidate == null) return true; // can't filter if unknown
+        return preferred.contains(candidate);
+    }
+
+    private boolean ageInRange(Integer min, Integer max, Integer candidate) {
+        if (candidate == null) return true;
+        if (min != null && candidate < min) return false;
+        if (max != null && candidate > max) return false;
+        return true;
     }
 
     private Event findSharedEvent(Preference a, Preference b) {

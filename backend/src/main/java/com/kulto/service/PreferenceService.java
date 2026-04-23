@@ -1,6 +1,7 @@
 package com.kulto.service;
 
 import com.kulto.domain.EventCategory;
+import com.kulto.domain.Gender;
 import com.kulto.domain.Preference;
 import com.kulto.domain.User;
 import com.kulto.dto.PreferenceRequest;
@@ -49,6 +50,24 @@ public class PreferenceService {
         pref.setInterestTags(request.getInterestTags());
         pref.setGeographicRadiusKm(request.getGeographicRadiusKm());
 
+        // Demographics / targeting
+        if (request.getPreferredGenders() != null) {
+            pref.setPreferredGenders(
+                    request.getPreferredGenders().stream()
+                            .map(g -> Gender.valueOf(g.toUpperCase()))
+                            .collect(Collectors.toList())
+            );
+        }
+        pref.setPreferredAgeMin(request.getPreferredAgeMin());
+        pref.setPreferredAgeMax(request.getPreferredAgeMax());
+
+        // Update the User own age / gender
+        if (request.getAge() != null) user.setAge(request.getAge());
+        if (request.getGender() != null && !request.getGender().isBlank()) {
+            user.setGender(Gender.valueOf(request.getGender().toUpperCase()));
+        }
+        userRepository.save(user);
+
         preferenceRepository.save(pref);
 
         int cancelled = matchRepository.cancelPendingMatchesForUser(userId);
@@ -68,6 +87,7 @@ public class PreferenceService {
     }
 
     private PreferenceResponse toResponse(Preference pref) {
+        User u = pref.getUser();
         return PreferenceResponse.builder()
                 .preferredCategories(
                         pref.getPreferredCategories().stream()
@@ -76,6 +96,12 @@ public class PreferenceService {
                 )
                 .interestTags(pref.getInterestTags())
                 .geographicRadiusKm(pref.getGeographicRadiusKm())
+                .age(u != null ? u.getAge() : null)
+                .gender(u != null && u.getGender() != null ? u.getGender().name() : null)
+                .preferredGenders(pref.getPreferredGenders() == null ? java.util.Collections.emptyList()
+                        : pref.getPreferredGenders().stream().map(Enum::name).collect(Collectors.toList()))
+                .preferredAgeMin(pref.getPreferredAgeMin())
+                .preferredAgeMax(pref.getPreferredAgeMax())
                 .updatedAt(pref.getUpdatedAt() != null ? pref.getUpdatedAt().toString() : null)
                 .build();
     }

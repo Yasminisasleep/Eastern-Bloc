@@ -36,6 +36,11 @@ public class User {
 
     private String contactLink;
 
+    private Integer age;
+
+    @Enumerated(EnumType.STRING)
+    private Gender gender;
+
     @Column(nullable = false)
     @Builder.Default
     private String role = "USER";

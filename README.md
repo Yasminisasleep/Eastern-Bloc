@@ -46,6 +46,28 @@ The system is a modular monolith with event-driven async processing via Kafka. T
 - [Data Model](./docs/img/kulto-data-model.png)
 - [Architecture Decision Records (ADRs)](./docs/adr/)
 
+## Screenshots
+
+### Landing page
+The public entry point of the app — hero, live event preview card with "X people want to go" signal, marquee of cultural tags, and the three-step explainer.
+
+![Landing page](./docs/img/screenshots/landing.png)
+
+### Discover — event feed
+Gradient heading, unified search + category filters, a featured event card and a responsive grid of upcoming outings with date badges.
+
+![Discover feed](./docs/img/screenshots/discover.png)
+
+### Cultural Preferences
+Users pick categories and interest tags, then set demographics (**About you**: age & gender) and matching filters (**Who you want to meet**: preferred genders + age range). These feed the matching engine.
+
+![Cultural preferences](./docs/img/screenshots/preferences.png)
+
+### It's a match!
+When two users both mark "I want to go" on the same event and are mutually compatible, a match is created with a taste-match score and a 48h acceptance window.
+
+![Match modal](./docs/img/screenshots/match.png)
+
 ## Getting Started
 
 ```bash
