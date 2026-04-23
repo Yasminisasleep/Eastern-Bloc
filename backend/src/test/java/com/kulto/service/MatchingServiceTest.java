@@ -195,4 +195,86 @@ class MatchingServiceTest {
 
         verify(matchRepository, never()).save(any());
     }
+
+    // --- demographicsCompatible --------------------------------------------
+
+    @Test
+    void demographicsCompatible_noFilters_returnsTrue() {
+        User a = User.builder().id(1L).age(25).gender(Gender.FEMALE).build();
+        User b = User.builder().id(2L).age(30).gender(Gender.MALE).build();
+        Preference pa = Preference.builder().user(a).build();
+        Preference pb = Preference.builder().user(b).build();
+
+        assertTrue(matchingService.demographicsCompatible(a, pa, b, pb));
+    }
+
+    @Test
+    void demographicsCompatible_genderMatch_returnsTrue() {
+        User a = User.builder().id(1L).age(25).gender(Gender.FEMALE).build();
+        User b = User.builder().id(2L).age(30).gender(Gender.MALE).build();
+        Preference pa = Preference.builder().user(a)
+                .preferredGenders(List.of(Gender.MALE)).build();
+        Preference pb = Preference.builder().user(b)
+                .preferredGenders(List.of(Gender.FEMALE)).build();
+
+        assertTrue(matchingService.demographicsCompatible(a, pa, b, pb));
+    }
+
+    @Test
+    void demographicsCompatible_genderMismatch_returnsFalse() {
+        User a = User.builder().id(1L).age(25).gender(Gender.FEMALE).build();
+        User b = User.builder().id(2L).age(30).gender(Gender.MALE).build();
+        Preference pa = Preference.builder().user(a)
+                .preferredGenders(List.of(Gender.FEMALE)).build();
+        Preference pb = Preference.builder().user(b)
+                .preferredGenders(List.of(Gender.FEMALE)).build();
+
+        assertFalse(matchingService.demographicsCompatible(a, pa, b, pb));
+    }
+
+    @Test
+    void demographicsCompatible_ageInRange_returnsTrue() {
+        User a = User.builder().id(1L).age(28).build();
+        User b = User.builder().id(2L).age(32).build();
+        Preference pa = Preference.builder().user(a)
+                .preferredAgeMin(25).preferredAgeMax(40).build();
+        Preference pb = Preference.builder().user(b)
+                .preferredAgeMin(20).preferredAgeMax(35).build();
+
+        assertTrue(matchingService.demographicsCompatible(a, pa, b, pb));
+    }
+
+    @Test
+    void demographicsCompatible_ageBelowMin_returnsFalse() {
+        User a = User.builder().id(1L).age(22).build();
+        User b = User.builder().id(2L).age(32).build();
+        Preference pa = Preference.builder().user(a).build();
+        Preference pb = Preference.builder().user(b)
+                .preferredAgeMin(25).preferredAgeMax(35).build();
+
+        assertFalse(matchingService.demographicsCompatible(a, pa, b, pb));
+    }
+
+    @Test
+    void demographicsCompatible_ageAboveMax_returnsFalse() {
+        User a = User.builder().id(1L).age(50).build();
+        User b = User.builder().id(2L).age(32).build();
+        Preference pa = Preference.builder().user(a).build();
+        Preference pb = Preference.builder().user(b)
+                .preferredAgeMin(25).preferredAgeMax(35).build();
+
+        assertFalse(matchingService.demographicsCompatible(a, pa, b, pb));
+    }
+
+    @Test
+    void demographicsCompatible_unknownGender_passesThrough() {
+        User a = User.builder().id(1L).age(25).build();
+        User b = User.builder().id(2L).age(30).gender(Gender.MALE).build();
+        Preference pa = Preference.builder().user(a)
+                .preferredGenders(List.of(Gender.MALE)).build();
+        Preference pb = Preference.builder().user(b)
+                .preferredGenders(List.of(Gender.FEMALE)).build();
+
+        assertTrue(matchingService.demographicsCompatible(a, pa, b, pb));
+    }
 }

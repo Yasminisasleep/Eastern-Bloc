@@ -158,4 +158,75 @@ class PreferenceServiceTest {
 
         assertDoesNotThrow(() -> preferenceService.savePreferences(1L, request));
     }
+
+    @Test
+    void savePreferences_withDemographics_persistsOnUserAndPreference() {
+        when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
+        when(preferenceRepository.findByUserId(1L)).thenReturn(Optional.empty());
+        when(preferenceRepository.save(any(Preference.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        PreferenceRequest request = new PreferenceRequest();
+        request.setPreferredCategories(List.of("CINEMA"));
+        request.setInterestTags(List.of("tag"));
+        request.setGeographicRadiusKm(10);
+        request.setAge(27);
+        request.setGender("female");
+        request.setPreferredGenders(List.of("male", "other"));
+        request.setPreferredAgeMin(25);
+        request.setPreferredAgeMax(35);
+
+        PreferenceResponse response = preferenceService.savePreferences(1L, request);
+
+        assertEquals(27, response.getAge());
+        assertEquals("FEMALE", response.getGender());
+        assertNotNull(response.getPreferredGenders());
+        assertEquals(2, response.getPreferredGenders().size());
+        assertTrue(response.getPreferredGenders().contains("MALE"));
+        assertEquals(25, response.getPreferredAgeMin());
+        assertEquals(35, response.getPreferredAgeMax());
+
+        verify(userRepository).save(testUser);
+        assertEquals(com.kulto.domain.Gender.FEMALE, testUser.getGender());
+        assertEquals(27, testUser.getAge());
+    }
+
+    @Test
+    void savePreferences_withoutDemographics_keepsExistingUserData() {
+        testUser.setAge(30);
+        testUser.setGender(com.kulto.domain.Gender.MALE);
+
+        when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
+        when(preferenceRepository.findByUserId(1L)).thenReturn(Optional.empty());
+        when(preferenceRepository.save(any(Preference.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        PreferenceRequest request = new PreferenceRequest();
+        request.setPreferredCategories(List.of("CINEMA"));
+        request.setInterestTags(List.of("tag"));
+        request.setGeographicRadiusKm(10);
+        // age, gender, preferredGenders left null
+
+        preferenceService.savePreferences(1L, request);
+
+        assertEquals(30, testUser.getAge());
+        assertEquals(com.kulto.domain.Gender.MALE, testUser.getGender());
+    }
+
+    @Test
+    void savePreferences_blankGender_isIgnored() {
+        testUser.setGender(com.kulto.domain.Gender.MALE);
+
+        when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
+        when(preferenceRepository.findByUserId(1L)).thenReturn(Optional.empty());
+        when(preferenceRepository.save(any(Preference.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        PreferenceRequest request = new PreferenceRequest();
+        request.setPreferredCategories(List.of("CINEMA"));
+        request.setInterestTags(List.of("tag"));
+        request.setGeographicRadiusKm(10);
+        request.setGender("   ");
+
+        preferenceService.savePreferences(1L, request);
+
+        assertEquals(com.kulto.domain.Gender.MALE, testUser.getGender());
+    }
 }

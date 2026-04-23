@@ -47,7 +47,9 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-            .csrf(csrf -> csrf.disable())
+            // CSRF protection is not required for a stateless JWT-authenticated REST API
+            // (no session cookies, no browser form submissions). See ADR on authentication.
+            .csrf(csrf -> csrf.disable()) // NOSONAR java:S4502 - stateless JWT API
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/health", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
