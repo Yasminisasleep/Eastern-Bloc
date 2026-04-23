@@ -107,4 +107,12 @@ class DomainAndDtoSmokeTest {
         assertEquals(28, u.getAge());
         assertEquals(Gender.FEMALE, u.getGender());
     }
+
+    @Test
+    void contactLinkRequest_accessors_work() {
+        ContactLinkRequest r = new ContactLinkRequest();
+        assertNull(r.getContactLink());
+        r.setContactLink("@handle");
+        assertEquals("@handle", r.getContactLink());
+    }
 }

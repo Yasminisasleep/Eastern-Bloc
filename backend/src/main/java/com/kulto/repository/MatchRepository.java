@@ -22,6 +22,12 @@ public interface MatchRepository extends JpaRepository<Match, Long> {
            "AND m.status NOT IN (com.kulto.domain.MatchStatus.REJECTED, com.kulto.domain.MatchStatus.CANCELLED)")
     boolean existsActiveMatchBetween(@Param("u1") Long u1, @Param("u2") Long u2);
 
+    @Query("SELECT m FROM Match m " +
+           "WHERE ((m.userOne.id = :u1 AND m.userTwo.id = :u2) OR (m.userOne.id = :u2 AND m.userTwo.id = :u1)) " +
+           "AND m.status NOT IN (com.kulto.domain.MatchStatus.REJECTED, com.kulto.domain.MatchStatus.CANCELLED) " +
+           "ORDER BY m.createdAt DESC")
+    List<Match> findActiveMatchesBetween(@Param("u1") Long u1, @Param("u2") Long u2);
+
     @Modifying
     @Query("UPDATE Match m SET m.status = com.kulto.domain.MatchStatus.CANCELLED " +
            "WHERE (m.userOne.id = :userId OR m.userTwo.id = :userId) " +

@@ -136,7 +136,7 @@ class EventInterestServiceTest {
         when(userRepository.findById(1L)).thenReturn(Optional.of(alice));
         when(eventRepository.findById(10L)).thenReturn(Optional.of(event));
         when(interestRepository.findAllByEventId(10L)).thenReturn(List.of(bobInterest));
-        when(matchRepository.existsActiveMatchBetween(1L, 2L)).thenReturn(false);
+        when(matchRepository.findActiveMatchesBetween(1L, 2L)).thenReturn(List.of());
         when(preferenceRepository.findByUserId(1L)).thenReturn(Optional.of(prefA));
         when(preferenceRepository.findByUserId(2L)).thenReturn(Optional.of(prefB));
         when(matchingService.demographicsCompatible(alice, prefA, bob, prefB)).thenReturn(true);
@@ -156,7 +156,7 @@ class EventInterestServiceTest {
         assertEquals(bob, created.getUserTwo());
         assertEquals(event, created.getEvent());
         assertEquals(MatchStatus.PENDING, created.getStatus());
-        assertTrue(created.getCompatibilityScore() >= 0.5);
+        assertTrue(created.getCompatibilityScore() >= 0.75);
 
         verify(notificationService).createMatchNotification(any(Match.class));
         verify(kafkaTemplate).send(eq("match.notifications"), anyString());
@@ -177,18 +177,61 @@ class EventInterestServiceTest {
     }
 
     @Test
-    void addInterest_existingActiveMatch_skips() {
+    void addInterest_existingActiveMatch_upgradesEventAndNotifies() {
         EventInterest bobInterest = EventInterest.builder().user(bob).event(event).build();
+        Event otherEvent = Event.builder().id(99L).title("Old").category(EventCategory.CONCERT)
+                .date(LocalDateTime.now().plusDays(2)).source("seed").build();
+        Match existing = Match.builder().id(55L)
+                .userOne(alice).userTwo(bob)
+                .event(otherEvent) // was pointing to a different event
+                .compatibilityScore(0.5)
+                .status(MatchStatus.PENDING)
+                .createdAt(LocalDateTime.now()).build();
 
         when(interestRepository.findByUserAndEvent(1L, 10L)).thenReturn(Optional.empty());
         when(userRepository.findById(1L)).thenReturn(Optional.of(alice));
         when(eventRepository.findById(10L)).thenReturn(Optional.of(event));
         when(interestRepository.findAllByEventId(10L)).thenReturn(List.of(bobInterest));
-        when(matchRepository.existsActiveMatchBetween(1L, 2L)).thenReturn(true);
+        when(preferenceRepository.findByUserId(1L)).thenReturn(Optional.of(prefA));
+        when(preferenceRepository.findByUserId(2L)).thenReturn(Optional.of(prefB));
+        when(matchingService.demographicsCompatible(alice, prefA, bob, prefB)).thenReturn(true);
+        when(matchRepository.findActiveMatchesBetween(1L, 2L)).thenReturn(List.of(existing));
 
         service.addInterest(1L, 10L);
 
-        verify(matchRepository, never()).save(any());
+        // Match should be upgraded: event now points to the shared one, score bumped ≥ 0.75
+        verify(matchRepository).save(existing);
+        assertEquals(event, existing.getEvent());
+        assertTrue(existing.getCompatibilityScore() >= 0.75);
+        verify(notificationService).createMatchNotification(existing);
+        // No NEW match built
+        verify(matchRepository, never()).save(argThat(m -> m != existing));
+    }
+
+    @Test
+    void addInterest_existingActiveMatchOnSameEvent_noUpgrade() {
+        EventInterest bobInterest = EventInterest.builder().user(bob).event(event).build();
+        Match existing = Match.builder().id(55L)
+                .userOne(alice).userTwo(bob)
+                .event(event) // already on the shared event
+                .compatibilityScore(0.8)
+                .status(MatchStatus.PENDING)
+                .createdAt(LocalDateTime.now()).build();
+
+        when(interestRepository.findByUserAndEvent(1L, 10L)).thenReturn(Optional.empty());
+        when(userRepository.findById(1L)).thenReturn(Optional.of(alice));
+        when(eventRepository.findById(10L)).thenReturn(Optional.of(event));
+        when(interestRepository.findAllByEventId(10L)).thenReturn(List.of(bobInterest));
+        when(preferenceRepository.findByUserId(1L)).thenReturn(Optional.of(prefA));
+        when(preferenceRepository.findByUserId(2L)).thenReturn(Optional.of(prefB));
+        when(matchingService.demographicsCompatible(alice, prefA, bob, prefB)).thenReturn(true);
+        when(matchRepository.findActiveMatchesBetween(1L, 2L)).thenReturn(List.of(existing));
+
+        service.addInterest(1L, 10L);
+
+        // No save, no new notification
+        verify(matchRepository, never()).save(any(Match.class));
+        verify(notificationService, never()).createMatchNotification(any());
     }
 
     @Test
@@ -199,7 +242,6 @@ class EventInterestServiceTest {
         when(userRepository.findById(1L)).thenReturn(Optional.of(alice));
         when(eventRepository.findById(10L)).thenReturn(Optional.of(event));
         when(interestRepository.findAllByEventId(10L)).thenReturn(List.of(bobInterest));
-        when(matchRepository.existsActiveMatchBetween(1L, 2L)).thenReturn(false);
         when(preferenceRepository.findByUserId(1L)).thenReturn(Optional.of(prefA));
         when(preferenceRepository.findByUserId(2L)).thenReturn(Optional.of(prefB));
         when(matchingService.demographicsCompatible(alice, prefA, bob, prefB)).thenReturn(false);
@@ -218,7 +260,7 @@ class EventInterestServiceTest {
         when(userRepository.findById(1L)).thenReturn(Optional.of(alice));
         when(eventRepository.findById(10L)).thenReturn(Optional.of(event));
         when(interestRepository.findAllByEventId(10L)).thenReturn(List.of(bobInterest));
-        when(matchRepository.existsActiveMatchBetween(1L, 2L)).thenReturn(false);
+        when(matchRepository.findActiveMatchesBetween(1L, 2L)).thenReturn(List.of());
         when(preferenceRepository.findByUserId(1L)).thenReturn(Optional.of(prefA));
         when(preferenceRepository.findByUserId(2L)).thenReturn(Optional.of(prefB));
         when(matchingService.demographicsCompatible(alice, prefA, bob, prefB)).thenReturn(true);

@@ -72,6 +72,43 @@
   --bottom-nav-h: 68px;
 }
 
+/* ─── Dark theme ───────────────────────────────────────── */
+html[data-theme="dark"] {
+  --bg:             #0B0B10;
+  --surface:        #15151C;
+  --surface-2:      #1D1D26;
+  --border:         #262631;
+  --border-strong:  #33333F;
+  --text-primary:   #F5F5F7;
+  --text-secondary: #A8A8B2;
+  --text-tertiary:  #6E6E78;
+
+  --accent:         #818CF8;
+  --accent-hover:   #A5B0FF;
+  --accent-soft:    #1E1F3D;
+  --accent-ring:    rgba(129,140,248,0.28);
+
+  --danger-soft:    #3A1414;
+  --success-soft:   #0F2E22;
+
+  --cat-cinema-bg:    #3A2A12; --cat-cinema-text:    #FBBF24;
+  --cat-concert-bg:   #2A1E3E; --cat-concert-text:   #C4B5FD;
+  --cat-exhibition-bg:#0F2E22; --cat-exhibition-text:#6EE7B7;
+  --cat-theatre-bg:   #0F1F3E; --cat-theatre-text:   #93C5FD;
+  --cat-festival-bg:  #3A1428; --cat-festival-text:  #F9A8D4;
+
+  --shadow-xs: 0 1px 2px rgba(0,0,0,0.45);
+  --shadow-sm: 0 2px 6px rgba(0,0,0,0.5), 0 1px 2px rgba(0,0,0,0.4);
+  --shadow-md: 0 8px 24px rgba(0,0,0,0.55), 0 2px 6px rgba(0,0,0,0.4);
+  --shadow-lg: 0 20px 50px rgba(0,0,0,0.6);
+}
+
+html[data-theme="dark"] body {
+  background-image:
+    radial-gradient(900px 500px at 85% -10%, rgba(129,140,248,0.10), transparent 60%),
+    radial-gradient(700px 400px at -10% 110%, rgba(236,72,153,0.06), transparent 60%);
+}
+
 /* ─── Base ──────────────────────────────────────────────── */
 html, body {
   background: var(--bg);
@@ -393,6 +430,27 @@ button:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
   border-radius: var(--r-pill);
 }
 .btn-logout:hover { background: var(--danger-soft); color: var(--danger); border-color: var(--danger); }
+
+/* Theme toggle */
+.theme-toggle {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--r-pill);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 160ms ease;
+}
+.theme-toggle:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+.theme-toggle svg { display: block; }
 
 /* ─── Inputs ────────────────────────────────────────────── */
 input[type="text"],

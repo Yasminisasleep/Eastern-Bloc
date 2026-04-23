@@ -58,12 +58,11 @@ public class EventInterestService {
         interestRepository.save(interest);
         log.info("User {} expressed interest in event {}", userId, eventId);
 
-        // Attempt to pair with any other interested user → create Match
+        // Attempt to pair with any other interested user → create or upgrade Match
         List<EventInterest> others = interestRepository.findAllByEventId(eventId);
         for (EventInterest other : others) {
             Long otherUserId = other.getUser().getId();
             if (otherUserId.equals(userId)) continue;
-            if (matchRepository.existsActiveMatchBetween(userId, otherUserId)) continue;
 
             Optional<Preference> prefA = preferenceRepository.findByUserId(userId);
             Optional<Preference> prefB = preferenceRepository.findByUserId(otherUserId);
@@ -75,10 +74,35 @@ public class EventInterestService {
                 continue;
             }
 
+            // If an active (pending/accepted) match already exists between these users,
+            // upgrade it to point to THIS shared event instead of creating a duplicate.
+            List<Match> existing = matchRepository.findActiveMatchesBetween(userId, otherUserId);
+            if (!existing.isEmpty()) {
+                Match m = existing.get(0);
+                boolean changedEvent = (m.getEvent() == null || !eventId.equals(m.getEvent().getId()));
+                if (changedEvent && m.getStatus() == MatchStatus.PENDING) {
+                    m.setEvent(event);
+                    // Bump score — shared-event signal is stronger than tag overlap alone
+                    double baseScore = m.getCompatibilityScore() == null ? 0.6 : m.getCompatibilityScore();
+                    m.setCompatibilityScore(Math.round(Math.max(baseScore, 0.75) * 100.0) / 100.0);
+                    matchRepository.save(m);
+                    notificationService.createMatchNotification(m);
+                    log.info("Upgraded existing match {} to shared event {} between {} and {}",
+                            m.getId(), eventId, userId, otherUserId);
+                    try {
+                        String payload = "{\"matchId\":" + m.getId() + ",\"source\":\"shared-event-upgrade\"}";
+                        kafkaTemplate.send("match.notifications", payload);
+                    } catch (Exception e) {
+                        log.warn("Failed to publish match upgrade notification: {}", e.getMessage());
+                    }
+                }
+                continue;
+            }
+
             double score = 0.7; // base score for shared interest in concrete event
             if (prefA.isPresent() && prefB.isPresent()) {
                 double compat = matchingService.computeCompatibility(prefA.get(), prefB.get());
-                score = Math.max(0.5, 0.5 + 0.5 * compat); // 0.5–1.0 range
+                score = Math.max(0.75, 0.5 + 0.5 * compat); // shared event → at least 0.75
             }
 
             Match match = Match.builder()
