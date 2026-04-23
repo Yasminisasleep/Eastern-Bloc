@@ -40,10 +40,14 @@ export default function Signup({ onToggleForm }: Props) {
   }
 
   return (
-    <div className="form-page">
-      <div className="form-card" data-cy="signup-form">
+    <div className="form-page auth-page">
+      <div className="auth-aura auth-aura-top" aria-hidden="true" />
+      <div className="auth-aura auth-aura-bottom" aria-hidden="true" />
+      <div className="form-card auth-card" data-cy="signup-form">
+        <p className="auth-kicker">Join the community</p>
         <div className="form-logo">kulto</div>
         <div className="form-heading">Create your account</div>
+        <p className="form-subheading">Build your profile and receive better cultural suggestions.</p>
 
         <form onSubmit={handleSubmit}>
           <div className="form-group">
@@ -88,7 +92,7 @@ export default function Signup({ onToggleForm }: Props) {
 
         <div className="form-link-row">
           Already have an account?{' '}
-          <a className="form-link" data-cy="switch-to-login" onClick={onToggleForm}>Log in</a>
+          <button type="button" className="form-link form-link-btn" data-cy="switch-to-login" onClick={onToggleForm}>Log in</button>
         </div>
       </div>
     </div>

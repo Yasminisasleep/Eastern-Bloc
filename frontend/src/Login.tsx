@@ -29,10 +29,14 @@ export default function Login({ onToggleForm }: Props) {
   }
 
   return (
-    <div className="form-page">
-      <div className="form-card" data-cy="login-form">
+    <div className="form-page auth-page">
+      <div className="auth-aura auth-aura-top" aria-hidden="true" />
+      <div className="auth-aura auth-aura-bottom" aria-hidden="true" />
+      <div className="form-card auth-card" data-cy="login-form">
+        <p className="auth-kicker">Cultural outings made social</p>
         <div className="form-logo">kulto</div>
         <div className="form-heading">Welcome back</div>
+        <p className="form-subheading">Log in and keep discovering your next cultural plan.</p>
 
         <form onSubmit={handleSubmit}>
           <div className="form-group">
@@ -50,7 +54,7 @@ export default function Login({ onToggleForm }: Props) {
 
           <div className="form-group">
             <label htmlFor="login-password">Password</label>
-            <div style={{ position: 'relative' }}>
+            <div className="password-input-wrap">
               <input
                 id="login-password"
                 data-cy="login-password"
@@ -59,27 +63,12 @@ export default function Login({ onToggleForm }: Props) {
                 onChange={e => setPassword(e.target.value)}
                 placeholder="••••••••"
                 required
-                style={{ paddingRight: '60px' }}
+                className="password-input"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(v => !v)}
-                style={{
-                  position: 'absolute',
-                  right: '12px',
-                  top: '50%',
-                  transform: 'translateY(-50%)',
-                  background: 'none',
-                  border: 'none',
-                  fontSize: '12px',
-                  color: 'var(--text-secondary)',
-                  cursor: 'pointer',
-                  padding: '4px',
-                  fontFamily: 'var(--font)',
-                  height: 'auto',
-                  width: 'auto',
-                  borderRadius: '0',
-                }}
+                className="password-toggle"
               >
                 {showPassword ? 'hide' : 'show'}
               </button>
@@ -97,9 +86,9 @@ export default function Login({ onToggleForm }: Props) {
 
         <div className="form-link-row">
           Don't have an account?{' '}
-          <a className="form-link" data-cy="switch-to-signup" onClick={onToggleForm}>
+          <button type="button" className="form-link form-link-btn" data-cy="switch-to-signup" onClick={onToggleForm}>
             Create one
-          </a>
+          </button>
         </div>
       </div>
     </div>
