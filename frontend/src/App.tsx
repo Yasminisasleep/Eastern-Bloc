@@ -11,6 +11,20 @@ import Notifications from './Notifications'
 import MatchDetail from './MatchDetail'
 
 type MainView = 'events' | 'preferences' | 'notifications' | 'match-detail'
+type ThemeMode = 'light' | 'dark'
+
+const THEME_STORAGE_KEY = 'kulto-theme'
+
+function getInitialTheme(): ThemeMode {
+  if (typeof window === 'undefined') return 'light'
+
+  const savedTheme = window.localStorage.getItem(THEME_STORAGE_KEY)
+  if (savedTheme === 'light' || savedTheme === 'dark') {
+    return savedTheme
+  }
+
+  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+}
 
 function App() {
   const [selectedEventId, setSelectedEventId] = useState<number | null>(null)
@@ -18,6 +32,7 @@ function App() {
   const [showSignup, setShowSignup] = useState(false)
   const [showLogin, setShowLogin] = useState(false)
   const [activeView, setActiveView] = useState<MainView>('events')
+  const [themeMode, setThemeMode] = useState<ThemeMode>(getInitialTheme)
   const { isAuthenticated, user, token, logout } = useAuth()
 
   const userId = user?.id
@@ -26,6 +41,15 @@ function App() {
   useEffect(() => {
     if (token) setAuthToken(token)
   }, [token])
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', themeMode)
+    window.localStorage.setItem(THEME_STORAGE_KEY, themeMode)
+  }, [themeMode])
+
+  const toggleTheme = () => {
+    setThemeMode((current) => (current === 'dark' ? 'light' : 'dark'))
+  }
 
   const handleLogout = () => {
     logout()
@@ -75,13 +99,25 @@ function App() {
   }
 
   if (!isAuthenticated) {
-    if (showSignup) {
-      return <Signup onToggleForm={() => { setShowSignup(false); setShowLogin(true) }} />
-    }
-    if (showLogin) {
-      return <Login onToggleForm={() => { setShowLogin(false); setShowSignup(true) }} />
-    }
-    return <Landing onLogin={() => setShowLogin(true)} onSignup={() => setShowSignup(true)} />
+    const publicScreen = showSignup
+      ? <Signup onToggleForm={() => { setShowSignup(false); setShowLogin(true) }} />
+      : showLogin
+        ? <Login onToggleForm={() => { setShowLogin(false); setShowSignup(true) }} />
+        : <Landing onLogin={() => setShowLogin(true)} onSignup={() => setShowSignup(true)} />
+
+    return (
+      <div className="app-root">
+        <button
+          type="button"
+          className="theme-toggle theme-toggle-floating theme-toggle-public"
+          aria-label={`Switch to ${themeMode === 'dark' ? 'light' : 'dark'} mode`}
+          onClick={toggleTheme}
+        >
+          {themeMode === 'dark' ? 'Light' : 'Dark'}
+        </button>
+        {publicScreen}
+      </div>
+    )
   }
 
   const isEventsActive = activeView === 'events'
@@ -94,6 +130,14 @@ function App() {
         <div className="top-bar">
           <span className="top-bar-logo">kulto</span>
           <div className="top-bar-actions">
+            <button
+              type="button"
+              className="theme-toggle"
+              aria-label={`Switch to ${themeMode === 'dark' ? 'light' : 'dark'} mode`}
+              onClick={toggleTheme}
+            >
+              {themeMode === 'dark' ? 'Light' : 'Dark'}
+            </button>
             {user && (
               <span className="top-bar-user" data-cy="user-name">{user.displayName}</span>
             )}
