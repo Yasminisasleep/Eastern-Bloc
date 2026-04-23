@@ -44,6 +44,12 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Compute lowercase image name
+        id: img
+        run: |
+          OWNER_LC="$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')"
+          echo "name=ghcr.io/${OWNER_LC}/kulto-backend" >> $GITHUB_OUTPUT
+
       # Build via Cloud Native Buildpacks (Spring Boot)
       - name: Build backend image (spring-boot:build-image)
         working-directory: backend
@@ -51,17 +57,15 @@ jobs:
           chmod +x mvnw
           ./mvnw -B -ntp spring-boot:build-image \
             -DskipTests \
-            -Dspring-boot.build-image.imageName=ghcr.io/${{ github.repository_owner }}/kulto-backend:${{ steps.v.outputs.version }}
+            -Dspring-boot.build-image.imageName=${{ steps.img.outputs.name }}:${{ steps.v.outputs.version }}
 
       - name: Tag & push backend
         run: |
           V="${{ steps.v.outputs.version }}"
-          OWNER="${{ github.repository_owner }}"
-          IMAGE_LC="$(echo ghcr.io/${OWNER}/kulto-backend | tr '[:upper:]' '[:lower:]')"
-          docker tag "ghcr.io/${OWNER}/kulto-backend:${V}" "${IMAGE_LC}:${V}"
-          docker tag "${IMAGE_LC}:${V}" "${IMAGE_LC}:latest"
-          docker push "${IMAGE_LC}:${V}"
-          docker push "${IMAGE_LC}:latest"
+          IMAGE="${{ steps.img.outputs.name }}"
+          docker tag "${IMAGE}:${V}" "${IMAGE}:latest"
+          docker push "${IMAGE}:${V}"
+          docker push "${IMAGE}:latest"
 
   frontend:
     name: Build & push frontend image
@@ -88,11 +92,17 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Compute lowercase image name
+        id: img
+        run: |
+          OWNER_LC="$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')"
+          echo "name=ghcr.io/${OWNER_LC}/kulto-frontend" >> $GITHUB_OUTPUT
+
       - name: Build & push frontend
         uses: docker/build-push-action@v6
         with:
           context: ./frontend
           push: true
           tags: |
-            ghcr.io/${{ github.repository_owner }}/kulto-frontend:${{ steps.v.outputs.version }}
-            ghcr.io/${{ github.repository_owner }}/kulto-frontend:latest
+            ${{ steps.img.outputs.name }}:${{ steps.v.outputs.version }}
+            ${{ steps.img.outputs.name }}:latest
