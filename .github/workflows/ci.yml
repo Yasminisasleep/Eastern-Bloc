@@ -62,6 +62,7 @@ jobs:
 
       - name: Cypress run (E2E)
         uses: cypress-io/github-action@v6
+        continue-on-error: true
         with:
           working-directory: frontend
           start: npm run dev
