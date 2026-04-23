@@ -9,15 +9,18 @@ import {
   CheckIcon,
   CalendarIcon,
 } from './Icons'
+import { ThemeToggle, Theme } from './theme'
 
 interface Props {
   onLogin: () => void
   onSignup: () => void
+  theme: Theme
+  onToggleTheme: () => void
 }
 
 const SAMPLE_TAGS = ['Indie film', 'Jazz', 'Contemporary art', 'Techno', 'Theatre', 'Classical']
 
-export default function Landing({ onLogin, onSignup }: Props) {
+export default function Landing({ onLogin, onSignup, theme, onToggleTheme }: Props) {
   const [events, setEvents] = useState<Event[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -47,6 +50,7 @@ export default function Landing({ onLogin, onSignup }: Props) {
           <a href="#events">Events</a>
         </nav>
         <div className="landing-auth-buttons">
+          <ThemeToggle theme={theme} onToggle={onToggleTheme} />
           <button className="btn-ghost btn-sm" data-cy="open-login" onClick={onLogin}>Log in</button>
           <button className="btn-primary btn-sm" data-cy="open-signup" onClick={onSignup}>Sign up</button>
         </div>

@@ -13,7 +13,7 @@
 
     <groupId>com.kulto</groupId>
     <artifactId>kulto-backend</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>1.0.0</version>
     <name>kulto-backend</name>
     <description>Kulto backend API</description>
 
@@ -159,6 +159,24 @@
                         </configuration>
                     </execution>
                 </executions>
+            </plugin>
+
+            <!-- OWASP Dependency-Check: CVE scan on all dependencies -->
+            <plugin>
+                <groupId>org.owasp</groupId>
+                <artifactId>dependency-check-maven</artifactId>
+                <version>10.0.4</version>
+                <configuration>
+                    <failBuildOnCVSS>11</failBuildOnCVSS> <!-- report only, don't fail build -->
+                    <formats>
+                        <format>HTML</format>
+                        <format>JSON</format>
+                    </formats>
+                    <suppressionFiles>
+                        <suppressionFile>owasp-suppressions.xml</suppressionFile>
+                    </suppressionFiles>
+                    <nvdValidForHours>24</nvdValidForHours>
+                </configuration>
             </plugin>
         </plugins>
     </build>

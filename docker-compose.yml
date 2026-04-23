@@ -1,6 +1,6 @@
 services:
   postgres:
-    image: postgres:16
+    image: postgres:16.4-alpine
     container_name: kulto-postgres
     ports:
       - "5432:5432"
@@ -18,37 +18,40 @@ services:
     networks:
       - kulto-net
 
-  zookeeper:
-    image: confluentinc/cp-zookeeper:7.6.0
-    container_name: kulto-zookeeper
-    ports:
-      - "2181:2181"
-    environment:
-      ZOOKEEPER_CLIENT_PORT: 2181
-      ZOOKEEPER_TICK_TIME: 2000
-    networks:
-      - kulto-net
-
+  # Kafka in KRaft mode (no Zookeeper) — Kafka 3.x native
   kafka:
-    image: confluentinc/cp-kafka:7.6.0
+    image: bitnami/kafka:3.7.1
     container_name: kulto-kafka
     ports:
       - "9092:9092"
-    depends_on:
-      zookeeper:
-        condition: service_started
     environment:
-      KAFKA_BROKER_ID: 1
-      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
-      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-      KAFKA_CREATE_TOPICS: "events.ingestion:1:1,user.preferences.updated:1:1,match.notifications:1:1"
+      # KRaft settings
+      KAFKA_CFG_NODE_ID: 1
+      KAFKA_CFG_PROCESS_ROLES: controller,broker
+      KAFKA_CFG_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_CFG_LISTENERS: PLAINTEXT://:29092,CONTROLLER://:9093,EXTERNAL://:9092
+      KAFKA_CFG_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,EXTERNAL://localhost:9092
+      KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,EXTERNAL:PLAINTEXT
+      KAFKA_CFG_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_CFG_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_CFG_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_CFG_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_CFG_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      ALLOW_PLAINTEXT_LISTENER: "yes"
+    volumes:
+      - kafka-data:/bitnami/kafka
+    healthcheck:
+      test: ["CMD-SHELL", "kafka-topics.sh --bootstrap-server localhost:9092 --list || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
     networks:
       - kulto-net
 
   backend:
+    # Pinned release image — fall back to local build if not yet pulled
+    image: ${BACKEND_IMAGE:-ghcr.io/yasminisasleep/kulto-backend:1.0.0}
     container_name: kulto-backend
     build: ./backend
     ports:
@@ -77,6 +80,7 @@ services:
       - kulto-net
 
   frontend:
+    image: ${FRONTEND_IMAGE:-ghcr.io/yasminisasleep/kulto-frontend:1.0.0}
     container_name: kulto-frontend
     build: ./frontend
     ports:
@@ -90,6 +94,7 @@ services:
 
 volumes:
   pgdata:
+  kafka-data:
 
 networks:
   kulto-net:

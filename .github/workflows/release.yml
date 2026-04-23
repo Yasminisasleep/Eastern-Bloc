@@ -1,0 +1,98 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version (e.g. 1.0.0)'
+        required: true
+        default: '1.0.0'
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  backend:
+    name: Build & push backend image
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Resolve version
+        id: v
+        run: |
+          if [ -n "${{ github.event.inputs.version }}" ]; then
+            echo "version=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
+          else
+            echo "version=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # Build via Cloud Native Buildpacks (Spring Boot)
+      - name: Build backend image (spring-boot:build-image)
+        working-directory: backend
+        run: |
+          chmod +x mvnw
+          ./mvnw -B -ntp spring-boot:build-image \
+            -DskipTests \
+            -Dspring-boot.build-image.imageName=ghcr.io/${{ github.repository_owner }}/kulto-backend:${{ steps.v.outputs.version }}
+
+      - name: Tag & push backend
+        run: |
+          V="${{ steps.v.outputs.version }}"
+          OWNER="${{ github.repository_owner }}"
+          IMAGE_LC="$(echo ghcr.io/${OWNER}/kulto-backend | tr '[:upper:]' '[:lower:]')"
+          docker tag "ghcr.io/${OWNER}/kulto-backend:${V}" "${IMAGE_LC}:${V}"
+          docker tag "${IMAGE_LC}:${V}" "${IMAGE_LC}:latest"
+          docker push "${IMAGE_LC}:${V}"
+          docker push "${IMAGE_LC}:latest"
+
+  frontend:
+    name: Build & push frontend image
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Resolve version
+        id: v
+        run: |
+          if [ -n "${{ github.event.inputs.version }}" ]; then
+            echo "version=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
+          else
+            echo "version=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build & push frontend
+        uses: docker/build-push-action@v6
+        with:
+          context: ./frontend
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/kulto-frontend:${{ steps.v.outputs.version }}
+            ghcr.io/${{ github.repository_owner }}/kulto-frontend:latest
