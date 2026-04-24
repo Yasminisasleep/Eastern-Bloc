@@ -19,19 +19,21 @@ import java.util.stream.Collectors;
 @Transactional
 public class MatchService {
 
+    private static final String MATCH_NOT_FOUND = "Match not found";
+
     private final MatchRepository matchRepository;
     private final PreferenceRepository preferenceRepository;
     private final NotificationService notificationService;
 
     public MatchResponse getMatch(Long matchId, Long requestingUserId) {
         Match match = matchRepository.findById(matchId)
-                .orElseThrow(() -> new ResourceNotFoundException("Match not found"));
+                .orElseThrow(() -> new ResourceNotFoundException(MATCH_NOT_FOUND));
         return toResponse(match, requestingUserId);
     }
 
     public MatchResponse acceptMatch(Long matchId, Long requestingUserId) {
         Match match = matchRepository.findById(matchId)
-                .orElseThrow(() -> new ResourceNotFoundException("Match not found"));
+                .orElseThrow(() -> new ResourceNotFoundException(MATCH_NOT_FOUND));
 
         if (match.getStatus() != MatchStatus.PENDING) {
             throw new IllegalStateException("Match is not in PENDING status");
@@ -55,7 +57,7 @@ public class MatchService {
 
     public MatchResponse rejectMatch(Long matchId, Long requestingUserId) {
         Match match = matchRepository.findById(matchId)
-                .orElseThrow(() -> new ResourceNotFoundException("Match not found"));
+                .orElseThrow(() -> new ResourceNotFoundException(MATCH_NOT_FOUND));
 
         if (match.getStatus() != MatchStatus.PENDING) {
             throw new IllegalStateException("Match is not in PENDING status");

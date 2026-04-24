@@ -14,6 +14,9 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class EventInterestController {
 
+    private static final String KEY_INTERESTED = "interested";
+    private static final String KEY_COUNT = "count";
+
     private final EventInterestService interestService;
     private final AuthUtils authUtils;
 
@@ -25,8 +28,8 @@ public class EventInterestController {
         boolean interested = interestService.hasInterest(userId, eventId);
         long count = interestService.count(eventId);
         return ResponseEntity.ok(Map.of(
-                "interested", interested,
-                "count", count
+                KEY_INTERESTED, interested,
+                KEY_COUNT, count
         ));
     }
 
@@ -37,8 +40,8 @@ public class EventInterestController {
         Long userId = authUtils.currentUserId(authentication);
         interestService.addInterest(userId, eventId);
         return ResponseEntity.ok(Map.of(
-                "interested", true,
-                "count", interestService.count(eventId)
+                KEY_INTERESTED, true,
+                KEY_COUNT, interestService.count(eventId)
         ));
     }
 
@@ -49,8 +52,8 @@ public class EventInterestController {
         Long userId = authUtils.currentUserId(authentication);
         interestService.removeInterest(userId, eventId);
         return ResponseEntity.ok(Map.of(
-                "interested", false,
-                "count", interestService.count(eventId)
+                KEY_INTERESTED, false,
+                KEY_COUNT, interestService.count(eventId)
         ));
     }
 }

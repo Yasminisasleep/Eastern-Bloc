@@ -38,14 +38,14 @@ class TicketmasterServiceTest {
 
     @Test
     void fetchEvents_disabled_returnsEmpty() {
-        assertTrue(ticketmasterService.fetchEventsFromTicketmaster("Paris", 10).isEmpty());
+        assertTrue(ticketmasterService.fetchEventsFromTicketmaster(10).isEmpty());
     }
 
     @Test
     void fetchEvents_enabledButBlankKey_returnsEmpty() {
         ReflectionTestUtils.setField(ticketmasterService, "enabled", true);
         ReflectionTestUtils.setField(ticketmasterService, "apiKey", "   ");
-        assertTrue(ticketmasterService.fetchEventsFromTicketmaster("Paris", 10).isEmpty());
+        assertTrue(ticketmasterService.fetchEventsFromTicketmaster(10).isEmpty());
     }
 
     @Test
@@ -53,7 +53,7 @@ class TicketmasterServiceTest {
         ReflectionTestUtils.setField(ticketmasterService, "enabled", true);
         ReflectionTestUtils.setField(ticketmasterService, "apiKey", "fake-key");
         when(webClientBuilder.build()).thenThrow(new RuntimeException("boom"));
-        List<Event> events = ticketmasterService.fetchEventsFromTicketmaster("Paris", 5);
+        List<Event> events = ticketmasterService.fetchEventsFromTicketmaster(5);
         assertTrue(events.isEmpty());
     }
 
@@ -89,7 +89,7 @@ class TicketmasterServiceTest {
         when(headersSpec.retrieve()).thenReturn(responseSpec);
         when(responseSpec.bodyToMono(String.class)).thenReturn(Mono.just(json));
 
-        List<Event> events = ticketmasterService.fetchEventsFromTicketmaster("Paris", 10);
+        List<Event> events = ticketmasterService.fetchEventsFromTicketmaster(10);
 
         // Same event returned on all 5 queries → deduped to 1
         assertEquals(1, events.size());

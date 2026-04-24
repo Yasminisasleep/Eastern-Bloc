@@ -19,6 +19,8 @@ import java.time.LocalDateTime;
 @RequiredArgsConstructor
 public class EventService {
 
+    private static final String EVENT_NOT_FOUND = "Event not found: ";
+
     private final EventRepository eventRepository;
 
     public EventResponse create(EventRequest request) {
@@ -69,13 +71,13 @@ public class EventService {
 
     public EventResponse getById(Long id) {
         Event event = eventRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Event not found: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException(EVENT_NOT_FOUND + id));
         return toResponse(event);
     }
 
     public EventResponse update(Long id, EventRequest request) {
         Event event = eventRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Event not found: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException(EVENT_NOT_FOUND + id));
         event.setTitle(request.getTitle());
         event.setDescription(request.getDescription());
         event.setCategory(request.getCategory());
@@ -91,7 +93,7 @@ public class EventService {
 
     public void delete(Long id) {
         Event event = eventRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Event not found: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException(EVENT_NOT_FOUND + id));
         event.setStatus(EventStatus.CANCELLED);
         eventRepository.save(event);
     }

@@ -31,7 +31,7 @@ public class JwtTokenProvider {
                 .subject(email)
                 .issuedAt(now)
                 .expiration(expiryDate)
-                .signWith(key, SignatureAlgorithm.HS512)
+                .signWith((javax.crypto.SecretKey) key, Jwts.SIG.HS512)
                 .compact();
     }
 
