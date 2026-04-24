@@ -23,6 +23,10 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class TicketmasterService {
 
+    private static final String FIELD_DATES = "dates";
+    private static final String FIELD_START = "start";
+    private static final String VAL_UNDEFINED = "Undefined";
+
     private final WebClient.Builder webClientBuilder;
     private final ObjectMapper objectMapper;
 
@@ -32,7 +36,7 @@ public class TicketmasterService {
     @Value("${ticketmaster.enabled:false}")
     private boolean enabled;
 
-    public List<Event> fetchEventsFromTicketmaster(String city, int pageSize) {
+    public List<Event> fetchEventsFromTicketmaster(int pageSize) {
         if (!enabled || apiKey == null || apiKey.isBlank()) {
             log.warn("Ticketmaster integration disabled or API key not configured");
             return List.of();
@@ -173,13 +177,13 @@ public class TicketmasterService {
 
     private LocalDateTime parseTicketmasterDate(JsonNode eventNode) {
         try {
-            String dateStr = eventNode.path("dates").path("start").path("dateTime").asText();
+            String dateStr = eventNode.path(FIELD_DATES).path(FIELD_START).path("dateTime").asText();
             if (!dateStr.isBlank()) {
                 ZonedDateTime zdt = ZonedDateTime.parse(dateStr, DateTimeFormatter.ISO_OFFSET_DATE_TIME);
                 return zdt.toLocalDateTime();
             }
-            String localDate = eventNode.path("dates").path("start").path("localDate").asText();
-            String localTime = eventNode.path("dates").path("start").path("localTime").asText();
+            String localDate = eventNode.path(FIELD_DATES).path(FIELD_START).path("localDate").asText();
+            String localTime = eventNode.path(FIELD_DATES).path(FIELD_START).path("localTime").asText();
             if (!localDate.isBlank()) {
                 String timeStr = !localTime.isBlank() ? localTime : "20:00:00";
                 return LocalDateTime.parse(localDate + "T" + timeStr);
@@ -200,17 +204,29 @@ public class TicketmasterService {
                 String type = classificationNode.path("type").path("name").asText("").toLowerCase();
 
                 String all = segment + " " + genre + " " + subGenre + " " + type;
-
-                if (all.contains("film") || all.contains("cinema") || all.contains("movie")) return EventCategory.CINEMA;
-                if (all.contains("theatre") || all.contains("theater") || all.contains("musical") || all.contains("opera")) return EventCategory.THEATRE;
-                if (all.contains("art") || all.contains("exhibition") || all.contains("museum")) return EventCategory.EXHIBITION;
-                if (all.contains("festival")) return EventCategory.FESTIVAL;
-                if (all.contains("music") || all.contains("concert") || all.contains("rock") || all.contains("pop") || all.contains("jazz") || all.contains("hip-hop") || all.contains("rap") || all.contains("electronic")) return EventCategory.CONCERT;
+                EventCategory matched = matchCategoryByKeywords(all);
+                if (matched != null) return matched;
             }
         } catch (Exception e) {
             log.debug("Failed to extract category: {}", e.getMessage());
         }
         return EventCategory.CONCERT;
+    }
+
+    private EventCategory matchCategoryByKeywords(String all) {
+        if (containsAny(all, "film", "cinema", "movie")) return EventCategory.CINEMA;
+        if (containsAny(all, "theatre", "theater", "musical", "opera")) return EventCategory.THEATRE;
+        if (containsAny(all, "art", "exhibition", "museum")) return EventCategory.EXHIBITION;
+        if (all.contains("festival")) return EventCategory.FESTIVAL;
+        if (containsAny(all, "music", "concert", "rock", "pop", "jazz", "hip-hop", "rap", "electronic")) return EventCategory.CONCERT;
+        return null;
+    }
+
+    private boolean containsAny(String haystack, String... needles) {
+        for (String n : needles) {
+            if (haystack.contains(n)) return true;
+        }
+        return false;
     }
 
     private List<String> extractTags(JsonNode eventNode) {
@@ -223,13 +239,13 @@ public class TicketmasterService {
                 String subGenre = classificationNode.path("subGenre").path("name").asText("");
                 String segment = classificationNode.path("segment").path("name").asText("");
 
-                if (!genre.isBlank() && !"Undefined".equalsIgnoreCase(genre)) {
+                if (!genre.isBlank() && !VAL_UNDEFINED.equalsIgnoreCase(genre)) {
                     tagSet.add(genre.toLowerCase().replace(" ", "-"));
                 }
-                if (!subGenre.isBlank() && !"Undefined".equalsIgnoreCase(subGenre) && !subGenre.equalsIgnoreCase(genre)) {
+                if (!subGenre.isBlank() && !VAL_UNDEFINED.equalsIgnoreCase(subGenre) && !subGenre.equalsIgnoreCase(genre)) {
                     tagSet.add(subGenre.toLowerCase().replace(" ", "-"));
                 }
-                if (!segment.isBlank() && !"Undefined".equalsIgnoreCase(segment) && tagSet.isEmpty()) {
+                if (!segment.isBlank() && !VAL_UNDEFINED.equalsIgnoreCase(segment) && tagSet.isEmpty()) {
                     tagSet.add(segment.toLowerCase().replace(" ", "-"));
                 }
             }

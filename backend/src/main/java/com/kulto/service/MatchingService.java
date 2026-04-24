@@ -38,44 +38,48 @@ public class MatchingService {
         List<User> allUsers = userRepository.findAll();
 
         for (User otherUser : allUsers) {
-            if (otherUser.getId().equals(userId)) continue;
-            if (matchRepository.existsActiveMatchBetween(userId, otherUser.getId())) continue;
+            tryMatchPair(userId, userPref, otherUser);
+        }
+    }
 
-            Optional<Preference> otherPrefOpt = preferenceRepository.findByUserId(otherUser.getId());
-            if (otherPrefOpt.isEmpty()) continue;
+    private void tryMatchPair(Long userId, Preference userPref, User otherUser) {
+        if (otherUser.getId().equals(userId)) return;
+        if (matchRepository.existsActiveMatchBetween(userId, otherUser.getId())) return;
 
-            Preference otherPref = otherPrefOpt.get();
+        Optional<Preference> otherPrefOpt = preferenceRepository.findByUserId(otherUser.getId());
+        if (otherPrefOpt.isEmpty()) return;
 
-            // Demographic gate
-            if (!demographicsCompatible(userPref.getUser(), userPref, otherUser, otherPref)) {
-                continue;
-            }
+        Preference otherPref = otherPrefOpt.get();
 
-            double score = computeCompatibility(userPref, otherPref);
+        // Demographic gate
+        if (!demographicsCompatible(userPref.getUser(), userPref, otherUser, otherPref)) {
+            return;
+        }
 
-            if (score >= 0.2) {
-                Event sharedEvent = findSharedEvent(userPref, otherPref);
+        double score = computeCompatibility(userPref, otherPref);
 
-                Match match = Match.builder()
-                        .userOne(userPref.getUser())
-                        .userTwo(otherUser)
-                        .event(sharedEvent)
-                        .compatibilityScore(Math.round(score * 100.0) / 100.0)
-                        .status(MatchStatus.PENDING)
-                        .createdAt(LocalDateTime.now())
-                        .build();
+        if (score >= 0.2) {
+            Event sharedEvent = findSharedEvent(userPref, otherPref);
 
-                matchRepository.save(match);
-                log.info("Created match between user {} and user {} with score {}", userId, otherUser.getId(), score);
+            Match match = Match.builder()
+                    .userOne(userPref.getUser())
+                    .userTwo(otherUser)
+                    .event(sharedEvent)
+                    .compatibilityScore(Math.round(score * 100.0) / 100.0)
+                    .status(MatchStatus.PENDING)
+                    .createdAt(LocalDateTime.now())
+                    .build();
 
-                notificationService.createMatchNotification(match);
+            matchRepository.save(match);
+            log.info("Created match between user {} and user {} with score {}", userId, otherUser.getId(), score);
 
-                try {
-                    String payload = "{\"matchId\":" + match.getId() + "}";
-                    kafkaTemplate.send("match.notifications", payload);
-                } catch (Exception e) {
-                    log.warn("Failed to publish match notification to Kafka: {}", e.getMessage());
-                }
+            notificationService.createMatchNotification(match);
+
+            try {
+                String payload = "{\"matchId\":" + match.getId() + "}";
+                kafkaTemplate.send("match.notifications", payload);
+            } catch (Exception e) {
+                log.warn("Failed to publish match notification to Kafka: {}", e.getMessage());
             }
         }
     }
@@ -120,8 +124,7 @@ public class MatchingService {
         if (!genderAllowed(prefA.getPreferredGenders(), b.getGender())) return false;
         if (!genderAllowed(prefB.getPreferredGenders(), a.getGender())) return false;
         if (!ageInRange(prefA.getPreferredAgeMin(), prefA.getPreferredAgeMax(), b.getAge())) return false;
-        if (!ageInRange(prefB.getPreferredAgeMin(), prefB.getPreferredAgeMax(), a.getAge())) return false;
-        return true;
+        return ageInRange(prefB.getPreferredAgeMin(), prefB.getPreferredAgeMax(), a.getAge());
     }
 
     private boolean genderAllowed(List<Gender> preferred, Gender candidate) {
@@ -133,8 +136,7 @@ public class MatchingService {
     private boolean ageInRange(Integer min, Integer max, Integer candidate) {
         if (candidate == null) return true;
         if (min != null && candidate < min) return false;
-        if (max != null && candidate > max) return false;
-        return true;
+        return max == null || candidate <= max;
     }
 
     private Event findSharedEvent(Preference a, Preference b) {

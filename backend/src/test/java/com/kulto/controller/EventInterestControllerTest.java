@@ -29,7 +29,6 @@ class EventInterestControllerTest {
     @Autowired private MatchRepository matchRepository;
     @Autowired private PreferenceRepository preferenceRepository;
 
-    private User alice;
     private Event event;
 
     @BeforeEach
@@ -41,7 +40,7 @@ class EventInterestControllerTest {
         eventRepository.deleteAll();
         userRepository.deleteAll();
 
-        alice = userRepository.save(User.builder()
+        userRepository.save(User.builder()
                 .email("ei-alice@test.com").displayName("Alice").passwordHash("h").build());
         event = eventRepository.save(Event.builder()
                 .title("Test Event").description("desc").category(EventCategory.CINEMA)
